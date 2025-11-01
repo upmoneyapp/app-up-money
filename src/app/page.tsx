@@ -13,16 +13,11 @@ import {
   Clock,
   Shield,
   Users,
-  Zap,
   Award,
-  BookOpen,
   ArrowRight,
-  Play,
-  Download,
   Gift,
   Sparkles
 } from 'lucide-react';
-import { useTracking, HOTMART_CHECKOUT_URLS } from '@/lib/tracking';
 
 export default function LandingPage() {
   const [timeLeft, setTimeLeft] = useState({
@@ -30,9 +25,6 @@ export default function LandingPage() {
     minutes: 45,
     seconds: 30
   });
-
-  // Hook de tracking para parâmetros UTM e conversões
-  const { trackConversion, trackingParams } = useTracking();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -51,36 +43,25 @@ export default function LandingPage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Função para lidar com cliques nos botões de checkout
-  const handleCheckoutClick = (planType: 'monthly' | 'semester' | 'annual', planName: string) => {
-    let baseUrl = HOTMART_CHECKOUT_URLS.MONTHLY; // URL padrão
-    
-    // Definir URL específica baseada no plano (você pode personalizar essas URLs)
-    switch (planType) {
-      case 'monthly':
-        baseUrl = HOTMART_CHECKOUT_URLS.MONTHLY;
-        break;
-      case 'semester':
-        baseUrl = HOTMART_CHECKOUT_URLS.SEMESTER;
-        break;
-      case 'annual':
-        baseUrl = HOTMART_CHECKOUT_URLS.ANNUAL;
-        break;
-    }
-    
-    // Construir URL com tracking
-    const trackedUrl = trackConversion(planName, baseUrl);
-    
-    // Abrir em nova aba
-    window.open(trackedUrl, '_blank', 'noopener,noreferrer');
-  };
-
   // Função para scroll suave até a seção de planos
   const scrollToPlans = () => {
     const plansSection = document.getElementById('plans-section');
     if (plansSection) {
       plansSection.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  // URLs dos produtos da Hotmart (substitua pelos seus links reais)
+  const HOTMART_LINKS = {
+    monthly: 'https://pay.hotmart.com/SEU_LINK_MENSAL',
+    semester: 'https://pay.hotmart.com/SEU_LINK_SEMESTRAL', 
+    annual: 'https://pay.hotmart.com/SEU_LINK_ANUAL'
+  };
+
+  // Função para lidar com cliques nos botões de checkout
+  const handleCheckoutClick = (planType: keyof typeof HOTMART_LINKS) => {
+    // Redirecionar para o link da Hotmart
+    window.open(HOTMART_LINKS[planType], '_blank');
   };
 
   const testimonials = [
@@ -184,7 +165,7 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#040509] to-[#2b3747] overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#040509] to-[#2b3747] w-full overflow-x-hidden">
       {/* Header */}
       <header className="fixed top-0 w-full bg-[#040509]/95 backdrop-blur-sm shadow-sm z-50 border-b border-[#dd9828]/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -523,7 +504,7 @@ export default function LandingPage() {
                 </div>
 
                 <button 
-                  onClick={() => handleCheckoutClick('monthly', 'UP Money - Plano Mensal')}
+                  onClick={() => handleCheckoutClick('monthly')}
                   className="w-full bg-gradient-to-r from-[#dd9828] to-[#dd9828]/80 text-[#040509] px-6 py-3 rounded-full font-bold hover:from-[#dd9828]/90 hover:to-[#dd9828]/70 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center space-x-2"
                 >
                   <span>COMEÇAR AGORA</span>
@@ -560,7 +541,7 @@ export default function LandingPage() {
                 </div>
 
                 <button 
-                  onClick={() => handleCheckoutClick('semester', 'UP Money - Plano Semestral')}
+                  onClick={() => handleCheckoutClick('semester')}
                   className="w-full bg-gradient-to-r from-[#dd9828] to-[#dd9828]/80 text-[#040509] px-6 py-3 rounded-full font-bold hover:from-[#dd9828]/90 hover:to-[#dd9828]/70 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center space-x-2"
                 >
                   <span>QUERO ECONOMIZAR</span>
@@ -572,8 +553,8 @@ export default function LandingPage() {
             {/* Plano Anual */}
             <div className="bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-3xl p-8 shadow-2xl border-2 border-[#dd9828]/30 relative transform hover:scale-105 transition-all duration-300">
               <div className="absolute -top-3 right-4">
-                <div className="bg-[#dd9828] text-[#040509] px-3 py-1 rounded-full text-xs font-bold">
-                  MELHOR VALOR
+                <div className="bg-gradient-to-r from-[#dd9828] to-[#dd9828]/80 text-[#040509] px-3 py-1 rounded-full text-xs font-bold">
+                  MÁXIMA ECONOMIA
                 </div>
               </div>
               
@@ -597,7 +578,7 @@ export default function LandingPage() {
                 </div>
 
                 <button 
-                  onClick={() => handleCheckoutClick('annual', 'UP Money - Plano Anual')}
+                  onClick={() => handleCheckoutClick('annual')}
                   className="w-full bg-gradient-to-r from-[#dd9828] to-[#dd9828]/80 text-[#040509] px-6 py-3 rounded-full font-bold hover:from-[#dd9828]/90 hover:to-[#dd9828]/70 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center space-x-2"
                 >
                   <span>MÁXIMA ECONOMIA</span>
