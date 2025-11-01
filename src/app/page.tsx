@@ -53,9 +53,9 @@ export default function LandingPage() {
 
   // URLs dos produtos da Hotmart (substitua pelos seus links reais)
   const HOTMART_LINKS = {
-    monthly: 'https://pay.hotmart.com/SEU_LINK_MENSAL',
-    semester: 'https://pay.hotmart.com/SEU_LINK_SEMESTRAL', 
-    annual: 'https://pay.hotmart.com/SEU_LINK_ANUAL'
+    monthly: 'https://pay.hotmart.com/J102711621S?off=c0c94yc8',
+    semester: 'https://pay.hotmart.com/J102711621S?off=hknpdaks', 
+    annual: 'https://pay.hotmart.com/J102711621S?off=dijt8g94'
   };
 
   // Função para lidar com cliques nos botões de checkout
