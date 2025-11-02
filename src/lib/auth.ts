@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { checkUserAccessByEmail } from '@/lib/access-control'
 
 export interface User {
   id: string
@@ -56,7 +57,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
   }
 }
 
-export async function hasActiveSubscription(user: User): boolean {
+export async function hasActiveSubscription(user: User): Promise<boolean> {
   if (!user.plan_status || user.plan_status !== 'active') {
     return false
   }
@@ -69,6 +70,45 @@ export async function hasActiveSubscription(user: User): boolean {
   const now = new Date()
 
   return expirationDate > now
+}
+
+/**
+ * Verifica se um usuário tem acesso baseado apenas no email
+ * Usado para verificar pagamentos da Hotmart sem necessidade de autenticação
+ */
+export async function checkUserAccessByEmailOnly(email: string): Promise<{ hasAccess: boolean; user: User | null }> {
+  try {
+    const accessStatus = await checkUserAccessByEmail(email)
+    return {
+      hasAccess: accessStatus.hasAccess,
+      user: accessStatus.user as User | null
+    }
+  } catch (error) {
+    console.error('Erro ao verificar acesso por email:', error)
+    return { hasAccess: false, user: null }
+  }
+}
+
+/**
+ * Cria uma sessão temporária para usuário com pagamento confirmado
+ * Permite acesso ao app sem necessidade de cadastro tradicional
+ */
+export async function createTemporarySession(email: string): Promise<{ success: boolean; user?: User; error?: string }> {
+  try {
+    // Verificar se o usuário tem acesso via pagamento
+    const { hasAccess, user } = await checkUserAccessByEmailOnly(email)
+    
+    if (!hasAccess || !user) {
+      return { success: false, error: 'Usuário não tem acesso ativo' }
+    }
+
+    // Criar sessão temporária no Supabase Auth (se necessário)
+    // Por enquanto, apenas retornamos o usuário para uso direto
+    return { success: true, user }
+  } catch (error) {
+    console.error('Erro ao criar sessão temporária:', error)
+    return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' }
+  }
 }
 
 export async function getPlanInfo(planType: string) {
