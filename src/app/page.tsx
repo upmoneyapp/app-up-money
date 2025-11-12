@@ -25,7 +25,9 @@ import {
   Menu,
   Target,
   Calendar,
-  Trophy
+  Trophy,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
 import { supabase } from '@/lib/supabase';
@@ -78,10 +80,11 @@ export default function UpMoneyApp() {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<ActiveSection>('dashboard');
-  const [monthlyIncome, setMonthlyIncome] = useState(5000);
+  const [monthlyIncome, setMonthlyIncome] = useState(0); // Alterado para 0
   const [isEditingIncome, setIsEditingIncome] = useState(false);
-  const [tempIncome, setTempIncome] = useState('5000');
+  const [tempIncome, setTempIncome] = useState('0'); // Alterado para '0'
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Estados para cada seção
   const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([]);
@@ -162,7 +165,8 @@ export default function UpMoneyApp() {
         .single();
       
       if (userData) {
-        setMonthlyIncome(userData.monthly_income);
+        setMonthlyIncome(userData.monthly_income || 0); // Garantir que seja 0 se não existir
+        setTempIncome((userData.monthly_income || 0).toString());
       }
 
       // Carregar itens do orçamento
@@ -252,7 +256,7 @@ export default function UpMoneyApp() {
 
   const handleIncomeEdit = async () => {
     const value = Number(tempIncome);
-    if (value > 0) {
+    if (value >= 0) { // Permitir 0 ou valores positivos
       setMonthlyIncome(value);
       await saveUserData(value);
     }
@@ -616,15 +620,15 @@ export default function UpMoneyApp() {
             localization={{
               variables: {
                 sign_in: {
-                  email_label: 'Insira seu e-mail',
-                  password_label: 'Sua senha',
+                  email_label: 'Digite seu e-mail',
+                  password_label: 'Digite sua senha',
                   button_label: 'Entrar',
                   loading_button_label: 'Entrando...',
                   link_text: 'Já tem uma conta? Entre aqui',
                 },
                 sign_up: {
-                  email_label: 'Insira seu e-mail',
-                  password_label: 'Sua senha',
+                  email_label: 'Digite seu e-mail',
+                  password_label: 'Digite sua senha',
                   button_label: 'Criar conta',
                   loading_button_label: 'Criando conta...',
                   link_text: 'Não tem uma conta? Cadastre-se',
@@ -969,6 +973,7 @@ export default function UpMoneyApp() {
             />
             <input
               type="date"
+              placeholder="Defina um prazo"
               value={newObjective.target_date}
               onChange={(e) => setNewObjective({...newObjective, target_date: e.target.value})}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -1587,98 +1592,100 @@ export default function UpMoneyApp() {
             </div>
           </div>
 
-          {/* Gráfico de Evolução com Linhas */}
+          {/* Gráfico de Evolução com Scroll Horizontal */}
           {patrimonyEntries.length > 1 && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Gráfico de Evolução
               </h3>
-              <div className="h-48 relative">
-                <svg className="w-full h-full" viewBox="0 0 400 150">
-                  {/* Grid lines */}
-                  {[0, 1, 2, 3, 4].map(i => (
-                    <line
-                      key={i}
-                      x1="30"
-                      y1={20 + i * 26}
-                      x2="370"
-                      y2={20 + i * 26}
-                      stroke="#e5e7eb"
-                      strokeWidth="1"
-                    />
-                  ))}
-                  
-                  {/* Y-axis labels */}
-                  {patrimonyEntries.length > 0 && (() => {
-                    const maxValue = Math.max(...patrimonyEntries.map(e => e.total));
-                    const minValue = Math.min(...patrimonyEntries.map(e => e.total));
-                    const range = maxValue - minValue;
+              <div className="overflow-x-auto">
+                <div className="h-48 relative" style={{ minWidth: `${Math.max(400, patrimonyEntries.length * 60)}px` }}>
+                  <svg className="w-full h-full" viewBox={`0 0 ${Math.max(400, patrimonyEntries.length * 60)} 150`}>
+                    {/* Grid lines */}
+                    {[0, 1, 2, 3, 4].map(i => (
+                      <line
+                        key={i}
+                        x1="30"
+                        y1={20 + i * 26}
+                        x2={Math.max(370, patrimonyEntries.length * 60 - 30)}
+                        y2={20 + i * 26}
+                        stroke="#e5e7eb"
+                        strokeWidth="1"
+                      />
+                    ))}
                     
-                    return [0, 1, 2, 3, 4].map(i => {
-                      const value = minValue + (range * (4 - i) / 4);
-                      const formattedValue = value >= 1000 
-                        ? `R$${(value / 1000).toFixed(0)}K`
-                        : formatCurrency(value);
+                    {/* Y-axis labels */}
+                    {patrimonyEntries.length > 0 && (() => {
+                      const maxValue = Math.max(...patrimonyEntries.map(e => e.total));
+                      const minValue = Math.min(...patrimonyEntries.map(e => e.total));
+                      const range = maxValue - minValue;
+                      
+                      return [0, 1, 2, 3, 4].map(i => {
+                        const value = minValue + (range * (4 - i) / 4);
+                        const formattedValue = value >= 1000 
+                          ? `R$${(value / 1000).toFixed(0)}K`
+                          : formatCurrency(value);
+                        
+                        return (
+                          <text
+                            key={i}
+                            x="25"
+                            y={24 + i * 26}
+                            textAnchor="end"
+                            className="text-xs fill-gray-600 dark:fill-gray-400"
+                          >
+                            {formattedValue}
+                          </text>
+                        );
+                      });
+                    })()}
+                    
+                    {/* Line chart */}
+                    {patrimonyEntries.length > 1 && (
+                      <polyline
+                        fill="none"
+                        stroke="#e7a034"
+                        strokeWidth="2"
+                        points={patrimonyEntries.map((entry, index) => {
+                          const x = 30 + (index * ((Math.max(340, patrimonyEntries.length * 60 - 60)) / (patrimonyEntries.length - 1)));
+                          const maxValue = Math.max(...patrimonyEntries.map(e => e.total));
+                          const minValue = Math.min(...patrimonyEntries.map(e => e.total));
+                          const range = maxValue - minValue || 1;
+                          const y = 124 - (((entry.total - minValue) / range) * 84);
+                          return `${x},${y}`;
+                        }).join(' ')}
+                      />
+                    )}
+                    
+                    {/* Data points */}
+                    {patrimonyEntries.map((entry, index) => {
+                      const x = 30 + (index * ((Math.max(340, patrimonyEntries.length * 60 - 60)) / (patrimonyEntries.length - 1)));
+                      const maxValue = Math.max(...patrimonyEntries.map(e => e.total));
+                      const minValue = Math.min(...patrimonyEntries.map(e => e.total));
+                      const range = maxValue - minValue || 1;
+                      const y = 124 - (((entry.total - minValue) / range) * 84);
                       
                       return (
-                        <text
-                          key={i}
-                          x="25"
-                          y={24 + i * 26}
-                          textAnchor="end"
-                          className="text-xs fill-gray-600 dark:fill-gray-400"
-                        >
-                          {formattedValue}
-                        </text>
+                        <g key={entry.id}>
+                          <circle
+                            cx={x}
+                            cy={y}
+                            r="3"
+                            fill="#e7a034"
+                          />
+                          <text
+                            x={x}
+                            y={145}
+                            textAnchor="middle"
+                            className="text-xs fill-gray-600 dark:fill-gray-400"
+                          >
+                            {entry.period}
+                          </text>
+                        </g>
                       );
-                    });
-                  })()}
-                  
-                  {/* Line chart */}
-                  {patrimonyEntries.length > 1 && (
-                    <polyline
-                      fill="none"
-                      stroke="#e7a034"
-                      strokeWidth="2"
-                      points={patrimonyEntries.map((entry, index) => {
-                        const x = 30 + (index * (340 / (patrimonyEntries.length - 1)));
-                        const maxValue = Math.max(...patrimonyEntries.map(e => e.total));
-                        const minValue = Math.min(...patrimonyEntries.map(e => e.total));
-                        const range = maxValue - minValue || 1;
-                        const y = 124 - (((entry.total - minValue) / range) * 84);
-                        return `${x},${y}`;
-                      }).join(' ')}
-                    />
-                  )}
-                  
-                  {/* Data points */}
-                  {patrimonyEntries.map((entry, index) => {
-                    const x = 30 + (index * (340 / (patrimonyEntries.length - 1)));
-                    const maxValue = Math.max(...patrimonyEntries.map(e => e.total));
-                    const minValue = Math.min(...patrimonyEntries.map(e => e.total));
-                    const range = maxValue - minValue || 1;
-                    const y = 124 - (((entry.total - minValue) / range) * 84);
-                    
-                    return (
-                      <g key={entry.id}>
-                        <circle
-                          cx={x}
-                          cy={y}
-                          r="3"
-                          fill="#e7a034"
-                        />
-                        <text
-                          x={x}
-                          y={145}
-                          textAnchor="middle"
-                          className="text-xs fill-gray-600 dark:fill-gray-400"
-                        >
-                          {entry.period}
-                        </text>
-                      </g>
-                    );
-                  })}
-                </svg>
+                    })}
+                  </svg>
+                </div>
               </div>
             </div>
           )}
@@ -2000,11 +2007,11 @@ export default function UpMoneyApp() {
           </div>
         )}
 
-        {/* Gráfico Interativo com Barras */}
+        {/* Gráfico Interativo com Barras - Tooltips para Mobile */}
         {calcResults.length > 0 && calcValues.years && Number(calcValues.years) > 0 && (
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Evolução do Investimento - Destaque Visual Juros x Aportes
+              Evolução do Investimento - Juros x Aportes
             </h3>
             <div className="w-full overflow-x-auto">
               <div className="flex items-end justify-center gap-2 px-4 h-64 relative" style={{ minWidth: `${Math.max(400, Number(calcValues.years) * 80)}px` }}>
@@ -2019,6 +2026,18 @@ export default function UpMoneyApp() {
                       key={yearIndex} 
                       className="flex flex-col items-center group relative cursor-pointer"
                       style={{ minWidth: `${Math.max(60, 300 / Number(calcValues.years))}px` }}
+                      onTouchStart={(e) => {
+                        // Para dispositivos móveis - mostrar tooltip no toque
+                        const tooltip = e.currentTarget.querySelector('.tooltip');
+                        if (tooltip) {
+                          tooltip.classList.remove('opacity-0');
+                          tooltip.classList.add('opacity-100');
+                          setTimeout(() => {
+                            tooltip.classList.remove('opacity-100');
+                            tooltip.classList.add('opacity-0');
+                          }, 3000);
+                        }
+                      }}
                     >
                       <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
                         {yearIndex + 1}a
@@ -2033,8 +2052,8 @@ export default function UpMoneyApp() {
                           style={{ height: `${contributionHeight}px` }}
                         ></div>
                       </div>
-                      {/* Tooltip centralizado */}
-                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-3 py-2 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 shadow-lg">
+                      {/* Tooltip para desktop e mobile */}
+                      <div className="tooltip absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-3 py-2 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 shadow-lg">
                         <div>Total: {formatCurrency(result.total)}</div>
                         <div>Aportes: {formatCurrency(result.contribution)}</div>
                         <div>Juros: {formatCurrency(result.interest)}</div>
@@ -2200,7 +2219,7 @@ export default function UpMoneyApp() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors touch-pan-x touch-pan-y" style={{ touchAction: 'pan-x pan-y' }}>
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
