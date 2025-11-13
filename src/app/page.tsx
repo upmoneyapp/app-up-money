@@ -158,15 +158,21 @@ export default function UpMoneyApp() {
 
     try {
       // Carregar renda mensal
-      const { data: userData } = await supabase
+      const { data: userData, error: userError } = await supabase
         .from('user_data')
         .select('*')
         .eq('user_id', session.user.id)
         .single();
       
-      if (userData) {
-        setMonthlyIncome(userData.monthly_income || 0); // Garantir que seja 0 se não existir
-        setTempIncome((userData.monthly_income || 0).toString());
+      if (userData && !userError) {
+        const income = userData.monthly_income || 0;
+        setMonthlyIncome(income);
+        setTempIncome(income.toString());
+      } else if (userError && userError.code === 'PGRST116') {
+        // Registro não existe, criar com valor 0
+        await saveUserData(0);
+        setMonthlyIncome(0);
+        setTempIncome('0');
       }
 
       // Carregar itens do orçamento

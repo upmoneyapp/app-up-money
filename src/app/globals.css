@@ -127,4 +127,17 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Prevenir zoom automático em inputs no iOS */
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"],
+  input[type="tel"],
+  input[type="url"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }

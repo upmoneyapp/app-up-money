@@ -24,12 +24,6 @@ export const metadata: Metadata = {
     icon: "https://k6hrqrxuu8obbfwn.public.blob.vercel-storage.com/temp/83aa3506-8236-4455-8319-74f99c4cb14b.png",
     apple: "https://k6hrqrxuu8obbfwn.public.blob.vercel-storage.com/temp/83aa3506-8236-4455-8319-74f99c4cb14b.png",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
 };
 
 export default function RootLayout({
@@ -46,7 +40,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="UP Money" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
       </head>
       <body className={inter.className}>
         <ThemeProvider>
