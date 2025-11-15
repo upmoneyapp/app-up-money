@@ -1,329 +1,137 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import crypto from 'crypto'
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
-// Configurações dos planos
-const PLAN_CONFIGS = {
-  monthly: {
-    duration: 30, // dias
-    name: 'Plano Mensal'
-  },
-  semester: {
-    duration: 180, // dias
-    name: 'Plano Semestral'
-  },
-  annual: {
-    duration: 365, // dias
-    name: 'Plano Anual'
-  }
-}
-
-// Função para validar webhook da Hotmart (opcional - se você tiver token)
-function validateHotmartWebhook(payload: string, signature: string, token: string): boolean {
-  try {
-    const expectedSignature = crypto
-      .createHmac('sha256', token)
-      .update(payload)
-      .digest('hex')
-    
-    return crypto.timingSafeEqual(
-      Buffer.from(signature, 'hex'),
-      Buffer.from(expectedSignature, 'hex')
-    )
-  } catch (error) {
-    console.error('Erro na validação do webhook:', error)
-    return false
-  }
-}
+// Criar cliente Supabase com service role para operações administrativas
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.text()
-    console.log('Raw webhook body:', body)
+    const body = await request.json();
     
-    let webhookData
-    try {
-      webhookData = JSON.parse(body)
-    } catch (parseError) {
-      console.error('Erro ao fazer parse do JSON:', parseError)
-      return NextResponse.json({ 
-        success: false, 
-        message: 'JSON inválido' 
-      }, { status: 200 }) // Mudança: retorna 200 em vez de 400
-    }
-    
-    console.log('Webhook recebido da Hotmart:', JSON.stringify(webhookData, null, 2))
+    // Log do webhook recebido
+    console.log('Webhook Hotmart recebido:', JSON.stringify(body, null, 2));
 
-    // Extrair dados do webhook da Hotmart - estrutura mais flexível
-    const event = webhookData.event || webhookData.type || webhookData.status || 'PURCHASE_APPROVED'
-    const data = webhookData.data || webhookData
-    
-    console.log('Evento detectado:', event)
+    // Verificar se é uma compra aprovada
+    const event = body.event;
+    const data = body.data;
 
-    // Processar todos os eventos relacionados a compra (mais flexível)
-    const validEvents = [
-      'PURCHASE_APPROVED', 
-      'PURCHASE_COMPLETE', 
-      'PURCHASE_BILLED',
-      'PURCHASE_PAID',
-      'approved',
-      'completed',
-      'billed'
-    ]
-    
-    const eventLower = event.toLowerCase()
-    const isValidEvent = validEvents.some(validEvent => 
-      eventLower.includes(validEvent.toLowerCase()) || 
-      validEvent.toLowerCase().includes(eventLower)
-    )
+    if (event === 'PURCHASE_APPROVED' || event === 'PURCHASE_COMPLETE') {
+      const buyerEmail = data.buyer?.email;
+      const buyerName = data.buyer?.name;
+      const productName = data.product?.name;
+      const transactionId = data.purchase?.transaction;
+      const status = data.purchase?.status;
 
-    if (!isValidEvent) {
-      console.log(`Evento ${event} recebido - processando mesmo assim`)
-      // Continua processando em vez de rejeitar
-    }
-
-    // Extrair dados da compra com múltiplos fallbacks
-    const purchase = data.purchase || data.transaction || data
-    const buyer = purchase.buyer || purchase.customer || purchase.user || {}
-    const product = purchase.product || purchase.offer || {}
-    const price = purchase.price || purchase.offer_price || purchase.amount || purchase.value || {}
-    
-    // Múltiplos fallbacks para email
-    const buyerEmail = buyer.email || 
-                      purchase.buyer_email || 
-                      purchase.customer_email ||
-                      purchase.email ||
-                      data.email ||
-                      webhookData.email ||
-                      ''
-    
-    // Múltiplos fallbacks para nome
-    const buyerName = buyer.name || 
-                     buyer.full_name ||
-                     purchase.buyer_name || 
-                     purchase.customer_name ||
-                     purchase.name ||
-                     data.name ||
-                     webhookData.name ||
-                     'Cliente'
-    
-    // Múltiplos fallbacks para transaction ID
-    const transactionId = purchase.transaction || 
-                         purchase.transaction_id || 
-                         purchase.id ||
-                         data.transaction ||
-                         data.transaction_id ||
-                         data.id ||
-                         webhookData.transaction ||
-                         webhookData.id ||
-                         `tx_${Date.now()}`
-    
-    // Múltiplos fallbacks para product ID
-    const productId = product.id || 
-                     product.product_id ||
-                     purchase.product_id || 
-                     data.product_id ||
-                     webhookData.product_id ||
-                     'unknown'
-    
-    console.log('Dados extraídos:', {
-      buyerEmail,
-      buyerName,
-      transactionId,
-      productId
-    })
-
-    // Validação mais flexível - aceita mesmo sem email em alguns casos
-    if (!buyerEmail && !transactionId) {
-      console.error('Nem email nem transaction ID encontrados no webhook')
-      // Retorna 200 para não causar reenvio do webhook
-      return NextResponse.json({ 
-        success: false, 
-        message: 'Dados insuficientes para processar' 
-      }, { status: 200 })
-    }
-
-    // Se não tem email, usa transaction ID como identificador
-    const userIdentifier = buyerEmail || `tx_${transactionId}`
-
-    // Determinar tipo de plano baseado no produto ou preço
-    let planType: 'monthly' | 'semester' | 'annual' = 'monthly'
-    
-    // Múltiplos fallbacks para preço
-    const priceValue = parseFloat(
-      price.value || 
-      price.amount || 
-      price.total ||
-      price ||
-      purchase.price ||
-      purchase.amount ||
-      purchase.value ||
-      data.price ||
-      data.amount ||
-      data.value ||
-      '0'
-    )
-    
-    console.log('Valor do preço detectado:', priceValue)
-    
-    // Lógica para determinar o plano baseado no preço
-    if (priceValue >= 140) {
-      planType = 'annual'
-    } else if (priceValue >= 90) {
-      planType = 'semester'
-    } else {
-      planType = 'monthly'
-    }
-
-    console.log(`Plano determinado: ${planType} (baseado no preço: ${priceValue})`)
-
-    // Calcular data de expiração
-    const expirationDate = new Date()
-    expirationDate.setDate(expirationDate.getDate() + PLAN_CONFIGS[planType].duration)
-
-    let userId: string
-
-    try {
-      // Verificar se usuário já existe (apenas se tiver email)
-      if (buyerEmail) {
-        const { data: existingUser, error: userError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('email', buyerEmail)
-          .maybeSingle()
-
-        if (userError && userError.code !== 'PGRST116') {
-          console.error('Erro ao buscar usuário:', userError)
-          // Continua mesmo com erro de consulta
-        }
-
-        if (existingUser) {
-          console.log('Atualizando usuário existente:', buyerEmail)
-          // Atualizar usuário existente
-          const { error: updateError } = await supabase
-            .from('users')
-            .update({
-              name: buyerName,
-              plan_type: planType,
-              plan_status: 'active',
-              plan_expires_at: expirationDate.toISOString(),
-              hotmart_transaction_id: transactionId,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', existingUser.id)
-
-          if (updateError) {
-            console.error('Erro ao atualizar usuário:', updateError)
-            // Continua mesmo com erro
-          }
-
-          userId = existingUser.id
-        } else {
-          console.log('Criando novo usuário:', buyerEmail)
-          // Criar novo usuário
-          const { data: newUser, error: createError } = await supabase
-            .from('users')
-            .insert({
-              email: buyerEmail,
-              name: buyerName,
-              plan_type: planType,
-              plan_status: 'active',
-              plan_expires_at: expirationDate.toISOString(),
-              hotmart_transaction_id: transactionId,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            })
-            .select()
-            .single()
-
-          if (createError) {
-            console.error('Erro ao criar usuário:', createError)
-            // Continua mesmo com erro
-            userId = `temp_${transactionId}`
-          } else {
-            userId = newUser.id
-          }
-        }
-      } else {
-        // Se não tem email, usa transaction ID como user ID temporário
-        userId = `temp_${transactionId}`
-        console.log('Processando sem email, usando ID temporário:', userId)
+      if (!buyerEmail) {
+        return NextResponse.json(
+          { error: 'Email do comprador não encontrado' },
+          { status: 400 }
+        );
       }
 
-      // Registrar transação (sempre tenta registrar)
-      try {
-        const { error: transactionError } = await supabase
-          .from('transactions')
-          .insert({
-            user_id: userId,
-            hotmart_transaction_id: transactionId,
-            product_id: productId,
-            plan_type: planType,
-            amount: priceValue,
-            status: 'completed',
-            webhook_data: webhookData,
-            created_at: new Date().toISOString()
-          })
-
-        if (transactionError) {
-          console.error('Erro ao registrar transação:', transactionError)
-          // Não falha o processo, apenas loga o erro
-        }
-      } catch (transactionErr) {
-        console.error('Erro ao inserir transação:', transactionErr)
-        // Continua o processo mesmo se a transação falhar
-      }
-
-      console.log(`✅ Webhook processado para ${userIdentifier} - Plano: ${planType} - Expira em: ${expirationDate.toISOString()}`)
-
-      // SEMPRE retorna 200 para evitar reenvios
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Webhook processado com sucesso',
-        user_id: userId,
-        plan_type: planType,
-        expires_at: expirationDate.toISOString(),
-        event: event,
-        transaction_id: transactionId
-      }, { status: 200 })
-
-    } catch (dbError) {
-      console.error('Erro de banco de dados:', dbError)
+      // Verificar se o usuário já existe no Supabase Auth
+      const { data: existingUser, error: userError } = await supabaseAdmin.auth.admin.listUsers();
       
-      // Mesmo com erro de BD, retorna 200 para não causar reenvio
-      return NextResponse.json({ 
-        success: false, 
-        message: 'Erro de banco de dados, mas webhook recebido',
-        error: dbError instanceof Error ? dbError.message : 'Erro desconhecido',
-        transaction_id: transactionId,
-        timestamp: new Date().toISOString()
-      }, { status: 200 })
+      let userId: string;
+      const userExists = existingUser?.users?.find(u => u.email === buyerEmail);
+
+      if (userExists) {
+        userId = userExists.id;
+        console.log('Usuário já existe:', buyerEmail);
+      } else {
+        // Criar novo usuário no Supabase Auth
+        const tempPassword = Math.random().toString(36).slice(-12) + 'A1!';
+        
+        const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+          email: buyerEmail,
+          password: tempPassword,
+          email_confirm: true,
+          user_metadata: {
+            name: buyerName,
+            created_via: 'hotmart_webhook'
+          }
+        });
+
+        if (createError || !newUser.user) {
+          console.error('Erro ao criar usuário:', createError);
+          return NextResponse.json(
+            { error: 'Erro ao criar usuário' },
+            { status: 500 }
+          );
+        }
+
+        userId = newUser.user.id;
+        console.log('Novo usuário criado:', buyerEmail);
+
+        // Enviar email com instruções de acesso
+        // TODO: Implementar envio de email com credenciais
+      }
+
+      // Registrar a compra na tabela de purchases
+      const { error: purchaseError } = await supabaseAdmin
+        .from('purchases')
+        .upsert({
+          user_id: userId,
+          email: buyerEmail,
+          transaction_id: transactionId,
+          product_name: productName,
+          status: status,
+          purchase_data: data,
+          created_at: new Date().toISOString()
+        }, {
+          onConflict: 'transaction_id'
+        });
+
+      if (purchaseError) {
+        console.error('Erro ao registrar compra:', purchaseError);
+      }
+
+      // Criar registro inicial de user_data se não existir
+      const { error: userDataError } = await supabaseAdmin
+        .from('user_data')
+        .upsert({
+          user_id: userId,
+          monthly_income: 0,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (userDataError) {
+        console.error('Erro ao criar user_data:', userDataError);
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: 'Compra processada com sucesso',
+        user_id: userId,
+        email: buyerEmail
+      });
     }
+
+    // Outros eventos (cancelamento, reembolso, etc.)
+    return NextResponse.json({
+      success: true,
+      message: 'Evento recebido mas não processado',
+      event: event
+    });
 
   } catch (error) {
-    console.error('Erro no webhook da Hotmart:', error)
-    
-    // Log detalhado do erro para debug
-    if (error instanceof Error) {
-      console.error('Stack trace:', error.stack)
-    }
-    
-    // SEMPRE retorna 200 para evitar reenvios infinitos
-    return NextResponse.json({ 
-      success: false, 
-      message: 'Erro processado, webhook recebido',
-      error: error instanceof Error ? error.message : 'Erro desconhecido',
-      timestamp: new Date().toISOString()
-    }, { status: 200 })
+    console.error('Erro ao processar webhook:', error);
+    return NextResponse.json(
+      { error: 'Erro interno ao processar webhook' },
+      { status: 500 }
+    );
   }
 }
 
-// Método GET para teste
+// Permitir GET para teste
 export async function GET() {
-  return NextResponse.json({ 
-    message: 'Endpoint do webhook da Hotmart está funcionando',
-    timestamp: new Date().toISOString(),
-    events_supported: ['PURCHASE_APPROVED', 'PURCHASE_COMPLETE', 'PURCHASE_BILLED', 'PURCHASE_PAID'],
+  return NextResponse.json({
+    message: 'Webhook Hotmart - UP Money',
     status: 'active'
-  })
+  });
 }
