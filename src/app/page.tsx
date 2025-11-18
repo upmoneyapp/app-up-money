@@ -927,6 +927,9 @@ export default function UpMoneyApp() {
         {/* Imagem de Juros */}
         <section className="bg-white py-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+              O PODER DOS JUROS COMPOSTOS AO SEU FAVOR
+            </h2>
             <img 
               src="https://k6hrqrxuu8obbfwn.public.blob.vercel-storage.com/temp/8fc6911e-e696-4b2a-8c85-432af409d57c.png" 
               alt="Simulador de Juros Compostos" 
@@ -938,9 +941,6 @@ export default function UpMoneyApp() {
         {/* Sessão 6 */}
         <section className="bg-[#ffffff] py-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 text-center">
-              O PODER DOS JUROS COMPOSTOS AO SEU FAVOR
-            </h2>
             <p className="text-lg text-gray-700 mb-6">
               Investindo apenas 10% do seu salário todo mês, veja a diferença ao longo do tempo:
             </p>
@@ -1007,7 +1007,7 @@ export default function UpMoneyApp() {
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-12 text-center">
               O QUE NOSSOS USUÁRIOS ESTÃO DIZENDO:
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Depoimento 1 */}
               <div className="bg-white rounded-lg p-6 shadow-lg">
                 <div className="flex items-center gap-3 mb-4">
