@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { 
   TrendingUp, 
   PieChart, 
@@ -28,11 +27,12 @@ import {
   Calendar,
   Trophy,
   Eye,
-  EyeOff,
-  ChevronDown
+  EyeOff
 } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
 import { supabase } from '@/lib/supabase';
+import { Auth } from '@supabase/auth-ui-react';
+import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { 
   formatCurrency, 
   calculateMethod60_30_10, 
@@ -76,17 +76,15 @@ interface ObjectiveContribution {
 }
 
 export default function UpMoneyApp() {
-  const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<ActiveSection>('dashboard');
-  const [monthlyIncome, setMonthlyIncome] = useState(0);
+  const [monthlyIncome, setMonthlyIncome] = useState(0); // Alterado para 0
   const [isEditingIncome, setIsEditingIncome] = useState(false);
-  const [tempIncome, setTempIncome] = useState('0');
+  const [tempIncome, setTempIncome] = useState('0'); // Alterado para '0'
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   // Estados para cada seção
   const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([]);
@@ -131,7 +129,7 @@ export default function UpMoneyApp() {
     });
 
     return () => subscription.unsubscribe();
-  }, [router]);
+  }, []);
 
   // Carregar dados do usuário quando logado
   useEffect(() => {
@@ -264,7 +262,7 @@ export default function UpMoneyApp() {
 
   const handleIncomeEdit = async () => {
     const value = Number(tempIncome);
-    if (value >= 0) {
+    if (value >= 0) { // Permitir 0 ou valores positivos
       setMonthlyIncome(value);
       await saveUserData(value);
     }
@@ -592,674 +590,64 @@ export default function UpMoneyApp() {
     );
   };
 
-  // Se não está logado, mostrar landing page
+  // Se não está logado, mostrar tela de login
   if (!session) {
     return (
-      <div className="min-h-screen bg-white">
-        {/* Header com Logo e Botão "Já Comprei" */}
-        <header className="bg-[#04050A] py-4 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <div className="min-h-screen bg-gradient-to-br from-[#e7a034] to-[#000000] flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 w-full max-w-md">
+          <div className="text-center mb-8">
             <img 
               src="https://k6hrqrxuu8obbfwn.public.blob.vercel-storage.com/temp/20f72b47-6a9a-490d-8e4c-72b4bf5d8000.png" 
               alt="UP Money Logo" 
-              className="h-10 w-auto"
+              className="h-16 w-auto mx-auto mb-4"
             />
-            <button
-              onClick={() => {
-                const loginSection = document.getElementById('login-section');
-                if (loginSection) {
-                  loginSection.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              className="px-3 py-1.5 text-xs sm:text-sm bg-white text-gray-900 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              Já Comprei
-            </button>
-          </div>
-        </header>
-
-        {/* Hero Section */}
-        <section className="bg-[#263240] py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
-              DESLIGUE O PILOTO AUTOMÁTICO E ASSUMA O CONTROLE DA SUA VIDA FINANCEIRA ATRAVÉS DO MÉTODO 60-30-10
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              Bem-vindo ao UP Money
             </h1>
-          </div>
-        </section>
-
-        {/* Imagem do Celular */}
-        <section className="bg-white py-8 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mx-auto text-center">
-            <img 
-              src="https://k6hrqrxuu8obbfwn.public.blob.vercel-storage.com/temp/ebb49626-2c17-481a-b464-52da34536589.png" 
-              alt="Aplicativo UP Money em smartphone" 
-              className="w-full max-w-md mx-auto h-auto"
-            />
-          </div>
-        </section>
-
-        {/* Sessão 1 */}
-        <section className="bg-white py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 text-center">
-              Você trabalha o mês inteiro... e mesmo assim nunca vê o dinheiro?
-            </h2>
-            <p className="text-lg text-gray-700 mb-4">
-              Está na hora de parar de viver no piloto automático e assumir o controle do seu dinheiro com o método milenar 60/30/10 — agora traduzido em um app prático, inteligente e transformador: <strong>UP Money</strong>
-            </p>
-            <p className="text-lg text-gray-700 mb-6">
-              Pare de viver no piloto automático. Aprenda o segredo milenar que transformou um simples escriba no homem mais rico da Babilônia - e como ele pode fazer o mesmo por você hoje.
-            </p>
-            
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 mt-8 text-center">
-              VOCÊ PAGA A TODOS... MENOS A SI MESMO.
-            </h3>
-            <p className="text-lg text-gray-700 mb-4">
-              Todo mês o mesmo ciclo: o salário entra e some. Você paga o banco, o aluguel, o cartão, a escola — e no fim, sobra o quê? <strong>Nada</strong>
-            </p>
-            <p className="text-lg text-gray-700 mb-4">
-              A maioria das pessoas vive assim, <em>submissa ao dinheiro</em>, sem perceber. Mas isso não é falta de sorte. É falta de método.
-            </p>
-            <blockquote className="border-l-4 border-[#e7a034] pl-4 italic text-gray-600 mb-4">
-              "Quem gasta tudo o que ganha, trabalha para os outros." — Arkad
-            </blockquote>
-            <p className="text-lg font-semibold text-gray-900 mb-4">
-              O problema nunca foi o quanto você ganha — e sim o quanto deixa escapar.
-            </p>
-            <p className="text-lg text-gray-700">
-              Você pode dobrar o que ganha, e ainda assim continuar no zero a zero. Sem controle, não há liberdade.
+            <p className="text-gray-600 dark:text-gray-300 text-sm">
+              Desligue o piloto automático e assuma o controle da sua vida financeira.
             </p>
           </div>
-        </section>
-
-        {/* CTA - Transforme sua vida financeira hoje */}
-        <section className="bg-[#ffffff] py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8">
-              Transforme sua vida financeira hoje
-            </h2>
-            <button
-              onClick={() => {
-                const plansSection = document.getElementById('plans-section');
-                if (plansSection) {
-                  plansSection.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              className="px-8 py-4 bg-gradient-to-r from-[#e7a034] to-[#d4941f] text-white text-lg font-semibold rounded-lg hover:from-[#d4941f] hover:to-[#b8801f] transition-all shadow-lg"
-            >
-              QUERO APLICAR O MÉTODO
-            </button>
-          </div>
-        </section>
-
-        {/* Sessão 2 */}
-        <section className="bg-[#263240] py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-white">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">
-              O SEGREDO DESCOBERTO HÁ MAIS DE 4.000 ANOS NA BABILÔNIA
-            </h2>
-            <p className="text-lg mb-4">
-              Na antiga Babilônia, Arkad — um simples escriba — tornou-se o homem mais rico de sua cidade. Seu segredo?
-            </p>
-            <blockquote className="border-l-4 border-[#e7a034] pl-4 italic text-gray-300 mb-6">
-              "Uma parte de tudo o que você ganha é sua, e deve ser guardada."
-            </blockquote>
-            <p className="text-lg mb-6">
-              Essa foi a semente do método 60/30/10 — simples, eterno e comprovado pelo tempo.
-            </p>
-            <p className="text-lg mb-8">
-              Enquanto a maioria segue o ciclo vicioso de pagar todas as contas primeiro e torcer para sobrar dinheiro, o Sistema Piloto Automático OFF aplica a fórmula 60/30/10 em ORDEM REVERSA. <strong>Você paga a SI MESMO primeiro</strong>, desativando permanentemente o piloto automático da escassez.
-            </p>
-
-            <h3 className="text-xl sm:text-2xl font-bold mb-6 mt-8 text-center">
-              A FÓRMULA QUE EQUILIBRA SUA VIDA FINANCEIRA SEM SOFRIMENTO
-            </h3>
-            <blockquote className="border-l-4 border-[#e7a034] pl-4 italic text-gray-300 mb-4">
-              "Pague a si mesmo, pague aos outros, e só depois desfrute."
-            </blockquote>
-            <p className="text-lg">
-              A diferença está na <strong>ORDEM</strong>: A maioria gasta primeiro e tenta guardar o que sobra (e nunca sobra). O método correto é <strong>separar os 10% PRIMEIRO</strong>, depois pagar as contas essenciais, e só então usar o restante para o seu lazer e conforto.
-            </p>
-          </div>
-        </section>
-
-        {/* Sessão 3 */}
-        <section className="bg-[#ffffff] py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 text-center">
-              O PAPEL DOS ATIVOS NO SEU PROCESSO DE ENRIQUECIMENTO
-            </h2>
-            <p className="text-lg text-gray-700 mb-4">
-              Ativo é tudo aquilo que <strong>COLOCA dinheiro no seu bolso</strong>:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-lg text-gray-700 mb-8">
-              <li>Reserva de emergência</li>
-              <li>Ações</li>
-              <li>Fundos imobiliários</li>
-              <li>Renda fixa</li>
-              <li>Investimentos internacionais</li>
-            </ul>
-
-            <p className="text-lg text-gray-700 mb-4">
-              Enquanto isso, passivos são tudo que <strong>TIRA dinheiro do seu bolso</strong>:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-lg text-gray-700 mb-6">
-              <li>Dívidas com juros altos (rotativo do cartão de crédito, cheque especial…)</li>
-              <li>Bens que só geram despesas (carro, casa…)</li>
-              <li>Gastos desnecessários (iPhone do ano, roupas novas todos os meses…)</li>
-            </ul>
-
-            <blockquote className="border-l-4 border-[#e7a034] pl-4 italic text-gray-600 text-lg">
-              "Ou você controla o dinheiro, ou ele controla você."
-            </blockquote>
-          </div>
-        </section>
-
-        {/* CTA - Quero Controlar Meu Dinheiro */}
-        <section className="bg-[#ffffff] py-8 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <button
-              onClick={() => {
-                const plansSection = document.getElementById('plans-section');
-                if (plansSection) {
-                  plansSection.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              className="px-8 py-4 bg-gradient-to-r from-[#e7a034] to-[#d4941f] text-white text-lg font-semibold rounded-lg hover:from-[#d4941f] hover:to-[#b8801f] transition-all shadow-lg"
-            >
-              QUERO CONTROLAR MEU DINHEIRO
-            </button>
-          </div>
-        </section>
-
-        {/* Sessão 4 */}
-        <section className="bg-[#ffffff] py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 text-center">
-              TUDO QUE VOCÊ PRECISA PARA SAIR DO ZERO A ZERO ESTÁ AQUI
-            </h2>
-            <p className="text-lg text-gray-700 mb-8">
-              O UP Money automatiza o método 60/30/10, fazendo o dinheiro finalmente trabalhar por você através de ferramentas exclusivas:
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">📊</span>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Painel de Controle</h3>
-                  <p className="text-gray-700">Método personalizado para sua realidade.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">🛒</span>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Orçamento</h3>
-                  <p className="text-gray-700">Liste todo o seu orçamento e veja para onde vai cada centavo.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">✂</span>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Quadro de cortes</h3>
-                  <p className="text-gray-700">Visualize o impacto de pequenos ajustes.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">💰</span>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Planilha da riqueza</h3>
-                  <p className="text-gray-700">Acompanhe seu crescimento mês a mês.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">🎯</span>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Quadro de metas</h3>
-                  <p className="text-gray-700">Defina sonhos e veja a barra de progresso crescer.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">💸</span>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Ganho Líquido</h3>
-                  <p className="text-gray-700">Descubra quanto realmente sobrou do seu período — e encare a sua realidade.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">⚡</span>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Calculadora de juros compostos</h3>
-                  <p className="text-gray-700">Veja como o tempo multiplica o que você guarda.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Bônus Exclusivos */}
-        <section className="bg-[#F2F5FA] py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 text-center">
-              BÔNUS EXCLUSIVOS
-            </h2>
-            <div className="text-center mb-4">
-              <img 
-                src="https://k6hrqrxuu8obbfwn.public.blob.vercel-storage.com/temp/ddaa314e-5145-43e0-ab9f-275da067793d.png" 
-                alt="Ebooks de finanças" 
-                className="w-full max-w-2xl mx-auto h-auto rounded-lg shadow-lg"
-              />
-              <p className="text-lg font-semibold text-[#e7a034] mt-4">
-                EBOOKS GRATUITOS - OFERTA LIMITADA APENAS PARA OS 50 PRIMEIROS
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA - Quero Aproveitar os Bônus */}
-        <section className="bg-[#F2F5FA] py-8 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <button
-              onClick={() => {
-                const plansSection = document.getElementById('plans-section');
-                if (plansSection) {
-                  plansSection.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              className="px-8 py-4 bg-gradient-to-r from-[#e7a034] to-[#d4941f] text-white text-lg font-semibold rounded-lg hover:from-[#d4941f] hover:to-[#b8801f] transition-all shadow-lg"
-            >
-              QUERO APROVEITAR OS BÔNUS
-            </button>
-          </div>
-        </section>
-
-        {/* Sessão 5 */}
-        <section className="bg-[#ffffff] py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 text-center">
-              O QUE VOCÊ VAI CONQUISTAR COM O MÉTODO 60-30-10:
-            </h2>
-            <div className="space-y-4 mb-8">
-              <div className="flex items-start gap-3">
-                <span className="text-green-600 text-xl flex-shrink-0">✅</span>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Escape do Ciclo "Zero a Zero" em 30 Dias</h3>
-                  <p className="text-gray-700">Transforme "sempre faltando" em "sempre sobrando" no final do mês</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-green-600 text-xl flex-shrink-0">✅</span>
-                <div>
-                  <p className="text-gray-700">Você vai aprender como montar uma Reserva de Emergência do zero — e finalmente sentir a segurança de ter o controle do seu dinheiro.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-green-600 text-xl flex-shrink-0">✅</span>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Mapeamento Financeiro Completo</h3>
-                  <p className="text-gray-700">Visualize com clareza absoluta o destino de cada centavo</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-green-600 text-xl flex-shrink-0">✅</span>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Liberdade Para Gastos Espontâneos Sem Culpa</h3>
-                  <p className="text-gray-700">Compre o que quiser sem ansiedade ou remorso</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-green-600 text-xl flex-shrink-0">✅</span>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Sono Tranquilo Garantido</h3>
-                  <p className="text-gray-700">Elimine a ansiedade financeira que te mantém acordado à noite</p>
-                </div>
-              </div>
-            </div>
-
-            <p className="text-lg font-semibold text-[#e7a034] mb-4">
-              A ORDEM É A CHAVE DO SUCESSO: Pague-se primeiro, depois pague os outros, depois desfrute.
-            </p>
-            <blockquote className="border-l-4 border-[#e7a034] pl-4 italic text-gray-600">
-              "O ser humano não foi feito para sobrar. Se você investir apenas o que sobra, nunca sobrará nada."
-            </blockquote>
-          </div>
-        </section>
-
-        {/* Imagem de Juros */}
-        <section className="bg-white py-8 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
-              O PODER DOS JUROS COMPOSTOS AO SEU FAVOR
-            </h2>
-            <img 
-              src="https://k6hrqrxuu8obbfwn.public.blob.vercel-storage.com/temp/8fc6911e-e696-4b2a-8c85-432af409d57c.png" 
-              alt="Simulador de Juros Compostos" 
-              className="w-full max-w-3xl mx-auto h-auto rounded-lg shadow-lg"
-            />
-          </div>
-        </section>
-
-        {/* Sessão 6 */}
-        <section className="bg-[#ffffff] py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <p className="text-lg text-gray-700 mb-6">
-              Investindo apenas 10% do seu salário todo mês, veja a diferença ao longo do tempo:
-            </p>
-
-            <div className="bg-gray-50 p-6 rounded-lg mb-8">
-              <h3 className="font-semibold text-gray-900 mb-4">Em 34 meses (reserva de emergência completa):</h3>
-              <ul className="space-y-2 text-gray-700">
-                <li>Apenas guardando: R$20.400</li>
-                <li>Na poupança: R$21.830</li>
-                <li>No Tesouro Selic: R$24.000</li>
-              </ul>
-            </div>
-
-            <div className="bg-gray-50 p-6 rounded-lg mb-8">
-              <h3 className="font-semibold text-gray-900 mb-4">Em 50 anos:</h3>
-              <ul className="space-y-2 text-gray-700">
-                <li>Apenas guardando: R$360.000</li>
-                <li>Na poupança: R$4.800.000</li>
-                <li>No Tesouro Selic: R$28.000.000 (R$24.000.000 após impostos)</li>
-              </ul>
-            </div>
-
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 text-center">
-              UM MÉTODO MILENAR, COMPROVADO POR GERAÇÕES — E VALIDADO POR ESPECIALISTAS
-            </h3>
-
-            <div className="space-y-6 mb-8">
-              <div>
-                <p className="font-semibold text-gray-900 mb-2">🏛 Arkad – O Homem Mais Rico da Babilônia</p>
-                <blockquote className="border-l-4 border-[#e7a034] pl-4 italic text-gray-600">
-                  "Uma parte de tudo o que você ganha é sua, e deve ser guardada."
-                </blockquote>
-              </div>
-              <div>
-                <p className="font-semibold text-gray-900 mb-2">💼 Thiago Nigro – Do Mil ao Milhão</p>
-                <blockquote className="border-l-4 border-[#e7a034] pl-4 italic text-gray-600">
-                  "Antes de investir, organize. O método 60/30/10 é simples e eficaz."
-                </blockquote>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA - Quero Aprender o Método Milenar */}
-        <section className="bg-[#ffffff] py-8 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <button
-              onClick={() => {
-                const plansSection = document.getElementById('plans-section');
-                if (plansSection) {
-                  plansSection.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              className="px-8 py-4 bg-gradient-to-r from-[#e7a034] to-[#d4941f] text-white text-lg font-semibold rounded-lg hover:from-[#d4941f] hover:to-[#b8801f] transition-all shadow-lg"
-            >
-              QUERO APRENDER O MÉTODO MILENAR
-            </button>
-          </div>
-        </section>
-
-        {/* Provas Sociais */}
-        <section className="bg-[#263240] py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-12 text-center">
-              O QUE NOSSOS USUÁRIOS ESTÃO DIZENDO:
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Depoimento 1 */}
-              <div className="bg-white rounded-lg p-6 shadow-lg">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#e7a034] to-[#d4941f] flex items-center justify-center text-white font-bold text-lg">
-                    C
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900">Carlos M.</p>
-                    <p className="text-sm text-gray-600">31 anos</p>
-                  </div>
-                </div>
-                <div className="flex mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-yellow-400">★</span>
-                  ))}
-                </div>
-                <p className="text-gray-700 italic">
-                  "Ganho R$6.500 como analista de sistemas e sempre acreditei que precisava ganhar mais para conseguir poupar. Após 5 meses usando o UP Money, já acumulei R$3.500 em reservas e continuo saindo com amigos e mantendo minhas assinaturas favoritas."
-                </p>
-              </div>
-
-              {/* Depoimento 2 */}
-              <div className="bg-white rounded-lg p-6 shadow-lg">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#e7a034] to-[#d4941f] flex items-center justify-center text-white font-bold text-lg">
-                    P
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900">Patrícia L.</p>
-                    <p className="text-sm text-gray-600">38 anos</p>
-                  </div>
-                </div>
-                <div className="flex mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-yellow-400">★</span>
-                  ))}
-                </div>
-                <p className="text-gray-700 italic">
-                  "Como profissional autônoma com renda variável, achei que seria impossível me organizar. O Sistema Piloto Automático OFF adaptou-se perfeitamente à minha realidade e, pela primeira vez em 8 anos, tenho uma reserva sólida de R$22.000."
-                </p>
-              </div>
-
-              {/* Depoimento 3 */}
-              <div className="bg-white rounded-lg p-6 shadow-lg">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#e7a034] to-[#d4941f] flex items-center justify-center text-white font-bold text-lg">
-                    F
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900">Fernanda e Rodrigo</p>
-                    <p className="text-sm text-gray-600">35 e 37 anos</p>
-                  </div>
-                </div>
-                <div className="flex mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-yellow-400">★</span>
-                  ))}
-                </div>
-                <p className="text-gray-700 italic">
-                  "Meu marido e eu brigávamos constantemente por dinheiro, mesmo com uma renda familiar de R$11.000. Depois do método, não só paramos de discutir como já planejamos nossa primeira viagem internacional paga à vista!"
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Escolha seu Plano */}
-        <section id="plans-section" className="bg-[#2a2d32] py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-12 text-center">
-              ESCOLHA SEU PLANO
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-              {/* Plano Mensal */}
-              <div className="bg-white rounded-2xl p-8 shadow-xl">
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Mensal</h3>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold text-[#e7a034]">R$ 47,90</span>
-                  <span className="text-gray-600">/mês</span>
-                </div>
-                <a
-                  href="https://pay.hotmart.com/J102711621S?off=c0c94yc8"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full py-3 bg-gradient-to-r from-[#e7a034] to-[#d4941f] text-white text-center font-semibold rounded-lg hover:from-[#d4941f] hover:to-[#b8801f] transition-all"
-                >
-                  COMEÇAR MINHA TRANSFORMAÇÃO
-                </a>
-              </div>
-
-              {/* Plano Semestral */}
-              <div className="bg-white rounded-2xl p-8 shadow-xl border-4 border-[#e7a034] relative">
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-[#e7a034] text-white px-4 py-1 rounded-full text-sm font-semibold">
-                  MAIS POPULAR
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Semestral</h3>
-                <div className="mb-2">
-                  <span className="text-3xl font-bold text-[#e7a034]">6x de R$18,37</span>
-                </div>
-                <div className="mb-6">
-                  <span className="text-lg text-gray-600">ou R$97,90 à vista</span>
-                </div>
-                <a
-                  href="https://pay.hotmart.com/J102711621S?off=hknpdaks"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full py-3 bg-gradient-to-r from-[#e7a034] to-[#d4941f] text-white text-center font-semibold rounded-lg hover:from-[#d4941f] hover:to-[#b8801f] transition-all"
-                >
-                  COMEÇAR MINHA TRANSFORMAÇÃO
-                </a>
-              </div>
-
-              {/* Plano Anual */}
-              <div className="bg-white rounded-2xl p-8 shadow-xl">
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Anual</h3>
-                <div className="mb-2">
-                  <span className="text-3xl font-bold text-[#e7a034]">12x de R$15,30</span>
-                </div>
-                <div className="mb-6">
-                  <span className="text-lg text-gray-600">ou R$147,90 à vista</span>
-                </div>
-                <a
-                  href="https://pay.hotmart.com/J102711621S?off=dijt8g94"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full py-3 bg-gradient-to-r from-[#e7a034] to-[#d4941f] text-white text-center font-semibold rounded-lg hover:from-[#d4941f] hover:to-[#b8801f] transition-all"
-                >
-                  COMEÇAR MINHA TRANSFORMAÇÃO
-                </a>
-              </div>
-            </div>
-
-            {/* Garantia e Pagamento Seguro */}
-            <div className="flex flex-col md:flex-row items-center justify-center gap-8 text-white mb-8">
-              <div className="text-center">
-                <div className="text-4xl mb-2">🛡️</div>
-                <p className="font-semibold">Garantia de 7 Dias</p>
-                <p className="text-sm text-gray-300">100% do seu dinheiro de volta</p>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl mb-2">🔒</div>
-                <p className="font-semibold">Pagamento Seguro</p>
-                <p className="text-sm text-gray-300">Processado pela Hotmart</p>
-              </div>
-            </div>
-
-            {/* Imagem de Formas de Pagamento */}
-            <div className="text-center">
-              <img 
-                src="https://k6hrqrxuu8obbfwn.public.blob.vercel-storage.com/temp/0a3dd4b9-8c57-44b1-87ae-bd2092fe7ecb.png" 
-                alt="Formas de pagamento aceitas" 
-                className="w-full max-w-2xl mx-auto h-auto"
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Perguntas Frequentes */}
-        <section className="bg-white py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 text-center">
-              PERGUNTAS FREQUENTES
-            </h2>
-            <div className="space-y-4">
-              {[
-                {
-                  question: "E se eu já tentei outros métodos e falhei?",
-                  answer: "Perfeito! O Sistema Piloto Automático OFF™ foi desenvolvido especificamente para pessoas que já tentaram outras abordagens sem sucesso. Nossa metodologia de inversão comportamental funciona mesmo para quem \"já tentou de tudo\"."
+          
+          <Auth
+            supabaseClient={supabase}
+            appearance={{
+              theme: ThemeSupa,
+              variables: {
+                default: {
+                  colors: {
+                    brand: '#e7a034',
+                    brandAccent: '#d4941f',
+                  },
                 },
-                {
-                  question: "Quanto tempo preciso dedicar por semana?",
-                  answer: "Apenas 15 minutos! O sistema foi desenhado para profissionais ocupados que não têm tempo para controles complexos."
+              },
+            }}
+            providers={[]}
+            localization={{
+              variables: {
+                sign_in: {
+                  email_label: 'Digite seu e-mail',
+                  password_label: 'Digite sua senha',
+                  button_label: 'Entrar',
+                  loading_button_label: 'Entrando...',
+                  link_text: 'Já tem uma conta? Entre aqui',
                 },
-                {
-                  question: "Funciona para qualquer nível de renda?",
-                  answer: "Sim! O método é adaptável para qualquer nível de renda! O destrave financeiro da sua vida não está na sua renda, e sim no seu comportamento."
+                sign_up: {
+                  email_label: 'Digite seu e-mail',
+                  password_label: 'Digite sua senha',
+                  button_label: 'Criar conta',
+                  loading_button_label: 'Criando conta...',
+                  link_text: 'Não tem uma conta? Cadastre-se',
                 },
-                {
-                  question: "Preciso entender de investimentos?",
-                  answer: "Absolutamente não! O sistema foca primeiro na organização e construção de reservas. Questões de investimento são abordadas apenas quando você já estiver com as bases sólidas."
+                forgotten_password: {
+                  link_text: 'Esqueceu sua senha?',
+                  button_label: 'Enviar instruções',
+                  loading_button_label: 'Enviando...',
                 },
-                {
-                  question: "Quanto tempo até ver os primeiros resultados?",
-                  answer: "A maioria dos usuários percebe mudanças significativas nos primeiros 30 dias, com resultados financeiros concretos em 60-90 dias."
-                }
-              ].map((faq, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
-                    className="w-full flex items-center justify-between p-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors"
-                  >
-                    <h3 className="font-semibold text-gray-900">P: {faq.question}</h3>
-                    <ChevronDown 
-                      className={`text-gray-600 transition-transform ${openFaqIndex === index ? 'rotate-180' : ''}`}
-                      size={20}
-                    />
-                  </button>
-                  {openFaqIndex === index && (
-                    <div className="p-4 bg-white">
-                      <p className="text-gray-700">R: {faq.answer}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Frase Final */}
-        <section className="bg-[#ffffff] py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <p className="text-2xl font-bold text-gray-900">
-              UP Money — da Babilônia ao seu bolso. Simples, Inteligente e Transformador.
-            </p>
-          </div>
-        </section>
-
-        {/* Seção de Login */}
-        <section id="login-section" className="bg-gray-50 py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-md mx-auto">
-            <div className="bg-white rounded-2xl p-8 shadow-xl">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-                Acesso ao APP UP MONEY
-              </h2>
-              <p className="text-center text-gray-600 mb-6">
-                Faça login para acessar o aplicativo completo
-              </p>
-              <div className="space-y-4">
-                <button
-                  onClick={() => window.location.href = '/login'}
-                  className="w-full py-3 bg-gradient-to-r from-[#e7a034] to-[#d4941f] text-white text-center font-semibold rounded-lg hover:from-[#d4941f] hover:to-[#b8801f] transition-all"
-                >
-                  Fazer Login
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Footer */}
-        <footer className="bg-[#263240] py-8 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto text-center text-white">
-            <img 
-              src="https://k6hrqrxuu8obbfwn.public.blob.vercel-storage.com/temp/20f72b47-6a9a-490d-8e4c-72b4bf5d8000.png" 
-              alt="UP Money Logo" 
-              className="h-8 w-auto mx-auto mb-4"
-            />
-            <p className="text-sm text-gray-300">
-              © 2024 UP Money. Todos os direitos reservados.
-            </p>
-          </div>
-        </footer>
+              },
+            }}
+          />
+        </div>
       </div>
     );
   }
@@ -1336,6 +724,7 @@ export default function UpMoneyApp() {
   ];
 
   const renderDashboard = () => {
+    // Calcular resumos dos outros menus
     const totalPatrimony = patrimonyEntries.length > 0 ? patrimonyEntries[patrimonyEntries.length - 1].total : 0;
     const totalCuts = cuts.reduce((sum, cut) => sum + cut.value, 0);
     const totalObjectives = objectives.length;
@@ -1453,8 +842,10 @@ export default function UpMoneyApp() {
             Distribuição do Método 60/30/10
           </h3>
           <div className="flex flex-col lg:flex-row items-center justify-center gap-8">
+            {/* Barra de Progresso */}
             <div className="w-full max-w-2xl overflow-x-auto">
               <div className="flex rounded-2xl border-2 border-white overflow-hidden shadow-lg min-w-[500px] md:min-w-[400px]">
+                {/* 60% Necessidades */}
                 <div className="flex-[60] bg-[#1a1a1a] text-white p-3 sm:p-4 md:p-6 flex items-center justify-center min-w-0">
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1 sm:gap-2 mb-1 sm:mb-2">
@@ -1466,6 +857,7 @@ export default function UpMoneyApp() {
                   </div>
                 </div>
                 
+                {/* 30% Desejos */}
                 <div className="flex-[30] bg-[#6c757d] text-white p-3 sm:p-4 md:p-6 flex items-center justify-center border-l-2 border-white min-w-0">
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1 sm:gap-2 mb-1 sm:mb-2">
@@ -1477,6 +869,7 @@ export default function UpMoneyApp() {
                   </div>
                 </div>
                 
+                {/* 10% Eu do Futuro */}
                 <div className="flex-[10] bg-white text-[#e7a034] p-2 sm:p-3 md:p-6 flex items-center justify-center border-l-2 border-white min-w-[80px] sm:min-w-[100px]">
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1 mb-1 sm:mb-2">
@@ -1552,6 +945,1260 @@ export default function UpMoneyApp() {
     );
   };
 
+  const renderObjectives = () => {
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            🎯 Objetivos
+          </h2>
+          <p className="text-gray-600 dark:text-gray-300">
+            Defina suas metas e acompanhe seu progresso
+          </p>
+        </div>
+
+        {/* Formulário para Novo Objetivo */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Criar Novo Objetivo
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input
+              type="text"
+              placeholder="Objetivo que quer alcançar"
+              value={newObjective.title}
+              onChange={(e) => setNewObjective({...newObjective, title: e.target.value})}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+            <input
+              type="number"
+              placeholder="Valor"
+              value={newObjective.target_value}
+              onChange={(e) => setNewObjective({...newObjective, target_value: e.target.value})}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+            <input
+              type="date"
+              placeholder="Defina um prazo"
+              value={newObjective.target_date}
+              onChange={(e) => setNewObjective({...newObjective, target_date: e.target.value})}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+            <button
+              onClick={addObjective}
+              className="px-6 py-2 bg-[#e7a034] text-white rounded-lg hover:bg-[#d4941f] transition-colors md:col-span-1"
+            >
+              <span className="block md:hidden">Adicionar</span>
+              <span className="hidden md:block">Criar Objetivo</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Lista de Objetivos */}
+        <div className="space-y-4">
+          {objectives.map((objective) => {
+            const progress = objective.target_value > 0 ? (objective.current_value / objective.target_value) * 100 : 0;
+            const isCompleted = objective.completed || progress >= 100;
+            const objectiveContributions = contributions.filter(c => c.objective_id === objective.id);
+            
+            return (
+              <div key={objective.id} className={`bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg ${isCompleted ? 'ring-2 ring-green-500' : ''}`}>
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className={`text-lg font-semibold ${isCompleted ? 'text-green-600' : 'text-gray-900 dark:text-white'}`}>
+                        {objective.title}
+                      </h3>
+                      {isCompleted && <Trophy className="text-green-500" size={20} />}
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                      <span>Meta: {formatCurrency(objective.target_value)}</span>
+                      <span>Prazo: {new Date(objective.target_date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => toggleObjectiveComplete(objective.id)}
+                      className={`p-2 rounded-lg transition-colors ${
+                        isCompleted 
+                          ? 'bg-green-100 text-green-600 dark:bg-green-900/20' 
+                          : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                      }`}
+                    >
+                      <Check size={16} />
+                    </button>
+                    <button
+                      onClick={() => deleteObjective(objective.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Barra de Progresso */}
+                <div className="mb-4">
+                  <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    <span>Progresso: {formatCurrency(objective.current_value)}</span>
+                    <span>{Math.min(progress, 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        isCompleted ? 'bg-green-500' : 'bg-[#e7a034]'
+                      }`}
+                      style={{ width: `${Math.min(progress, 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Adicionar Contribuição */}
+                {!isCompleted && (
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="number"
+                      placeholder="Valor mensal"
+                      value={contributionAmounts[objective.id] || ''}
+                      onChange={(e) => setContributionAmounts({
+                        ...contributionAmounts,
+                        [objective.id]: e.target.value
+                      })}
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                    />
+                    <button
+                      onClick={() => addContribution(objective.id)}
+                      className="px-3 py-2 bg-gradient-to-r from-[#e7a034] to-[#d4941f] text-white rounded-lg hover:from-[#d4941f] hover:to-[#b8801f] transition-all text-sm whitespace-nowrap sm:w-auto w-full"
+                    >
+                      Adicionar
+                    </button>
+                  </div>
+                )}
+
+                {/* Histórico de Contribuições */}
+                {objectiveContributions.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                      Histórico de Contribuições
+                    </h4>
+                    <div className="space-y-1">
+                      {objectiveContributions.slice(-3).map((contribution) => (
+                        <div key={contribution.id} className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
+                          <span>{new Date(contribution.contribution_date).toLocaleDateString('pt-BR')}</span>
+                          <span>{formatCurrency(contribution.amount)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {objectives.length === 0 && (
+          <div className="text-center py-12">
+            <Target className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Nenhum objetivo criado
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              Crie seu primeiro objetivo para começar a acompanhar seu progresso.
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderBudget = () => (
+    <div className="space-y-6">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          💸 Controle de Orçamento
+        </h2>
+      </div>
+
+      {/* Formulário */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Anote seu Orçamento Mensal
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <input
+            type="text"
+            placeholder="Descrição"
+            value={newBudgetItem.description}
+            onChange={(e) => setNewBudgetItem({...newBudgetItem, description: e.target.value})}
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          />
+          <select
+            value={newBudgetItem.category}
+            onChange={(e) => setNewBudgetItem({...newBudgetItem, category: e.target.value as any})}
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          >
+            <option value="emergency">Reserva de Emergência</option>
+            <option value="essential">Despesas Essenciais</option>
+            <option value="nonessential">Despesas Não Obrigatórias</option>
+          </select>
+          <input
+            type="number"
+            placeholder="Valor"
+            value={newBudgetItem.value}
+            onChange={(e) => setNewBudgetItem({...newBudgetItem, value: e.target.value})}
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          />
+          <button
+            onClick={addBudgetItem}
+            className="px-6 py-2 bg-[#e7a034] text-white rounded-lg hover:bg-[#d4941f] transition-colors"
+          >
+            Adicionar
+          </button>
+        </div>
+      </div>
+
+      {/* Lista de Itens */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Itens do Orçamento
+        </h3>
+        <div className="space-y-3">
+          {budgetItems.map((item) => (
+            <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div>
+                <div className="font-medium text-gray-900 dark:text-white">{item.description}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  {item.category === 'emergency' && 'Reserva de Emergência'}
+                  {item.category === 'essential' && 'Despesas Essenciais'}
+                  {item.category === 'nonessential' && 'Despesas Não Obrigatórias'}
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {formatCurrency(item.value)}
+                </div>
+                <button
+                  onClick={() => deleteBudgetItem(item.id)}
+                  className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Gráfico de Distribuição com Setores e Legenda */}
+      {budgetItems.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Distribuição do Orçamento
+          </h3>
+          <div className="flex flex-col lg:flex-row items-center gap-8">
+            <div className="relative w-64 h-64">
+              <svg viewBox="0 0 200 200" className="w-full h-full">
+                {(() => {
+                  const emergency = budgetItems.filter(item => item.category === 'emergency').reduce((sum, item) => sum + item.value, 0);
+                  const essential = budgetItems.filter(item => item.category === 'essential').reduce((sum, item) => sum + item.value, 0);
+                  const nonessential = budgetItems.filter(item => item.category === 'nonessential').reduce((sum, item) => sum + item.value, 0);
+                  const total = emergency + essential + nonessential;
+                  
+                  if (total === 0) return null;
+                  
+                  const emergencyPercent = (emergency / total) * 100;
+                  const essentialPercent = (essential / total) * 100;
+                  const nonessentialPercent = (nonessential / total) * 100;
+                  
+                  const emergencyAngle = (emergency / total) * 360;
+                  const essentialAngle = (essential / total) * 360;
+                  const nonessentialAngle = (nonessential / total) * 360;
+                  
+                  let currentAngle = 0;
+                  const paths = [];
+                  
+                  if (emergency > 0) {
+                    const endAngle = currentAngle + emergencyAngle;
+                    const x1 = 100 + 50 * Math.cos((currentAngle * Math.PI) / 180);
+                    const y1 = 100 + 50 * Math.sin((currentAngle * Math.PI) / 180);
+                    const x2 = 100 + 50 * Math.cos((endAngle * Math.PI) / 180);
+                    const y2 = 100 + 50 * Math.sin((endAngle * Math.PI) / 180);
+                    const largeArc = emergencyAngle > 180 ? 1 : 0;
+                    
+                    const midAngle = (currentAngle + endAngle) / 2;
+                    const textX = 100 + 30 * Math.cos((midAngle * Math.PI) / 180);
+                    const textY = 100 + 30 * Math.sin((midAngle * Math.PI) / 180);
+                    
+                    paths.push(
+                      <g key="emergency">
+                        <path
+                          d={`M 100 100 L ${x1} ${y1} A 50 50 0 ${largeArc} 1 ${x2} ${y2} Z`}
+                          fill="#e7a034"
+                          stroke="white"
+                          strokeWidth="2"
+                        />
+                        <text x={textX} y={textY} textAnchor="middle" className="text-xs fill-white font-semibold">
+                          {Math.round(emergencyPercent)}%
+                        </text>
+                      </g>
+                    );
+                    currentAngle = endAngle;
+                  }
+                  
+                  if (essential > 0) {
+                    const endAngle = currentAngle + essentialAngle;
+                    const x1 = 100 + 50 * Math.cos((currentAngle * Math.PI) / 180);
+                    const y1 = 100 + 50 * Math.sin((currentAngle * Math.PI) / 180);
+                    const x2 = 100 + 50 * Math.cos((endAngle * Math.PI) / 180);
+                    const y2 = 100 + 50 * Math.sin((endAngle * Math.PI) / 180);
+                    const largeArc = essentialAngle > 180 ? 1 : 0;
+                    
+                    const midAngle = (currentAngle + endAngle) / 2;
+                    const textX = 100 + 30 * Math.cos((midAngle * Math.PI) / 180);
+                    const textY = 100 + 30 * Math.sin((midAngle * Math.PI) / 180);
+                    
+                    paths.push(
+                      <g key="essential">
+                        <path
+                          d={`M 100 100 L ${x1} ${y1} A 50 50 0 ${largeArc} 1 ${x2} ${y2} Z`}
+                          fill="#000000"
+                          stroke="white"
+                          strokeWidth="2"
+                        />
+                        <text x={textX} y={textY} textAnchor="middle" className="text-xs fill-white font-semibold">
+                          {Math.round(essentialPercent)}%
+                        </text>
+                      </g>
+                    );
+                    currentAngle = endAngle;
+                  }
+                  
+                  if (nonessential > 0) {
+                    const endAngle = currentAngle + nonessentialAngle;
+                    const x1 = 100 + 50 * Math.cos((currentAngle * Math.PI) / 180);
+                    const y1 = 100 + 50 * Math.sin((currentAngle * Math.PI) / 180);
+                    const x2 = 100 + 50 * Math.cos((endAngle * Math.PI) / 180);
+                    const y2 = 100 + 50 * Math.sin((endAngle * Math.PI) / 180);
+                    const largeArc = nonessentialAngle > 180 ? 1 : 0;
+                    
+                    const midAngle = (currentAngle + endAngle) / 2;
+                    const textX = 100 + 30 * Math.cos((midAngle * Math.PI) / 180);
+                    const textY = 100 + 30 * Math.sin((midAngle * Math.PI) / 180);
+                    
+                    paths.push(
+                      <g key="nonessential">
+                        <path
+                          d={`M 100 100 L ${x1} ${y1} A 50 50 0 ${largeArc} 1 ${x2} ${y2} Z`}
+                          fill="#6b7280"
+                          stroke="white"
+                          strokeWidth="2"
+                        />
+                        <text x={textX} y={textY} textAnchor="middle" className="text-xs fill-white font-semibold">
+                          {Math.round(nonessentialPercent)}%
+                        </text>
+                      </g>
+                    );
+                  }
+                  
+                  return paths;
+                })()}
+              </svg>
+            </div>
+            
+            <div className="flex flex-col gap-3">
+              {['emergency', 'essential', 'nonessential'].map((category) => {
+                const items = budgetItems.filter(item => item.category === category);
+                const total = items.reduce((sum, item) => sum + item.value, 0);
+                const percentage = budgetItems.length > 0 ? (total / budgetItems.reduce((sum, item) => sum + item.value, 0)) * 100 : 0;
+                
+                if (total === 0) return null;
+                
+                return (
+                  <div key={category} className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded ${
+                      category === 'emergency' ? 'bg-[#e7a034]' :
+                      category === 'essential' ? 'bg-black' : 'bg-gray-500'
+                    }`}></div>
+                    <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[120px]">
+                      {category === 'emergency' && 'Reserva'}
+                      {category === 'essential' && 'Essencial'}
+                      {category === 'nonessential' && 'Não Obrigatório'}
+                    </span>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                      {formatCurrency(total)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          
+          <div className="text-center mt-6">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              {formatCurrency(budgetItems.reduce((sum, item) => sum + item.value, 0))}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Total Preenchido
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Frase Motivacional */}
+      <div className="bg-gradient-to-r from-[#e7a034]/10 to-[#e7a034]/5 rounded-2xl p-6 text-center">
+        <p className="text-lg font-medium text-[#e7a034]">
+          💡 "Pague a si mesmo primeiro, honre seus compromissos e só então permita-se desfrutar."
+        </p>
+      </div>
+    </div>
+  );
+
+  const renderCuts = () => {
+    const totalCuts = cuts.reduce((sum, cut) => sum + cut.value, 0);
+    const annualSavings = totalCuts * 12;
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            ✂️ Quadro de Cortes
+          </h2>
+        </div>
+
+        {/* Formulário */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Registrar Novo Corte
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input
+              type="text"
+              placeholder="Descrição do corte"
+              value={newCut.description}
+              onChange={(e) => setNewCut({...newCut, description: e.target.value})}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+            <input
+              type="number"
+              placeholder="Valor mensal"
+              value={newCut.value}
+              onChange={(e) => setNewCut({...newCut, value: e.target.value})}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+            <select
+              value={newCut.category}
+              onChange={(e) => setNewCut({...newCut, category: e.target.value as any})}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              <option value="essential">Despesa Essencial</option>
+              <option value="nonessential">Despesa Não Obrigatória</option>
+            </select>
+            <button
+              onClick={addCut}
+              className="px-6 py-2 bg-[#e7a034] text-white rounded-lg hover:bg-[#d4941f] transition-colors"
+            >
+              Adicionar Corte
+            </button>
+          </div>
+        </div>
+
+        {/* Resumo de Economias */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-gradient-to-br from-[#e7a034] to-[#d4941f] rounded-2xl p-6 text-white">
+            <h3 className="font-semibold mb-2">Economia Mensal</h3>
+            <div className="text-2xl font-bold">{formatCurrency(totalCuts)}</div>
+          </div>
+          <div className="bg-gradient-to-br from-gray-700 to-black rounded-2xl p-6 text-white">
+            <h3 className="font-semibold mb-2">Economia Anual</h3>
+            <div className="text-2xl font-bold">{formatCurrency(annualSavings)}</div>
+          </div>
+          <div className="bg-gradient-to-br from-gray-600 to-gray-800 rounded-2xl p-6 text-white">
+            <h3 className="font-semibold mb-2">Total de Cortes</h3>
+            <div className="text-2xl font-bold">{cuts.length}</div>
+          </div>
+        </div>
+
+        {/* Lista de Cortes */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Resumo dos Cortes
+          </h3>
+          <div className="space-y-3">
+            {cuts.map((cut) => (
+              <div key={cut.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div>
+                  <div className="font-medium text-gray-900 dark:text-white">{cut.description}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    {cut.category === 'essential' ? 'Despesa Essencial' : 'Despesa Não Obrigatória'}
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <div className="text-lg font-semibold text-green-600">
+                      {formatCurrency(cut.value)}/mês
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      {formatCurrency(cut.value * 12)}/ano
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => deleteCut(cut.id)}
+                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Frase Motivacional */}
+        <div className="bg-gradient-to-r from-[#e7a034]/10 to-[#e7a034]/5 rounded-2xl p-6 text-center">
+          <p className="text-lg font-medium text-[#e7a034]">
+            💭 "Um real bem cuidado hoje vira trinta motivos para agradecer amanhã."
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  const renderPatrimony = () => (
+    <div className={`space-y-6 ${typeof window !== 'undefined' && window.innerWidth >= 1024 ? 'max-h-screen overflow-hidden' : ''}`}>
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          💰 Patrimônio
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300">
+          Planilha da Riqueza - Acompanhe a evolução do seu patrimônio
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 h-full">
+        {/* Coluna Esquerda */}
+        <div className="space-y-6">
+          {/* Formulário */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Registrar Patrimônio
+            </h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              <input
+                type="text"
+                placeholder="Período (ex: Jan/2024)"
+                value={newPatrimony.period}
+                onChange={(e) => setNewPatrimony({...newPatrimony, period: e.target.value})}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+              />
+              <input
+                type="number"
+                placeholder="Valor em Banco"
+                value={newPatrimony.bank}
+                onChange={(e) => setNewPatrimony({...newPatrimony, bank: e.target.value})}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+              />
+              <input
+                type="number"
+                placeholder="Valor em Corretora"
+                value={newPatrimony.brokerage}
+                onChange={(e) => setNewPatrimony({...newPatrimony, brokerage: e.target.value})}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+              />
+              <input
+                type="number"
+                placeholder="Valor em Bens"
+                value={newPatrimony.assets}
+                onChange={(e) => setNewPatrimony({...newPatrimony, assets: e.target.value})}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+              />
+            </div>
+            <button
+              onClick={addPatrimony}
+              className="w-full mt-4 px-4 py-2 bg-[#e7a034] text-white rounded-lg hover:bg-[#d4941f] transition-colors text-sm"
+            >
+              Adicionar
+            </button>
+          </div>
+
+          {/* Legenda */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Legenda Ilustrativa
+            </h3>
+            <div className="grid grid-cols-1 gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+                  <Wallet className="text-blue-600" size={16} />
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900 dark:text-white text-sm">Banco</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">Conta corrente</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+                  <TrendingUp className="text-green-600" size={16} />
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900 dark:text-white text-sm">Corretora</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">Investimentos</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+                  <DollarSign className="text-purple-600" size={16} />
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900 dark:text-white text-sm">Bens</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">Patrimônio físico</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Coluna Direita */}
+        <div className="space-y-6">
+          {/* Tabela de Patrimônio */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Evolução Patrimonial
+            </h3>
+            <div className="max-h-64 overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-white dark:bg-gray-800">
+                  <tr className="border-b border-gray-200 dark:border-gray-600">
+                    <th className="text-left py-2 px-2 font-medium text-gray-900 dark:text-white">Período</th>
+                    <th className="text-right py-2 px-2 font-medium text-gray-900 dark:text-white">Banco</th>
+                    <th className="text-right py-2 px-2 font-medium text-gray-900 dark:text-white">Corretora</th>
+                    <th className="text-right py-2 px-2 font-medium text-gray-900 dark:text-white">Bens</th>
+                    <th className="text-right py-2 px-2 font-medium text-gray-900 dark:text-white">Total</th>
+                    <th className="text-center py-2 px-2 font-medium text-gray-900 dark:text-white">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {patrimonyEntries.map((entry) => (
+                    <tr key={entry.id} className="border-b border-gray-100 dark:border-gray-700">
+                      <td className="py-2 px-2 text-gray-900 dark:text-white">{entry.period}</td>
+                      <td className="py-2 px-2 text-right text-gray-900 dark:text-white">{formatCurrency(entry.bank)}</td>
+                      <td className="py-2 px-2 text-right text-gray-900 dark:text-white">{formatCurrency(entry.brokerage)}</td>
+                      <td className="py-2 px-2 text-right text-gray-900 dark:text-white">{formatCurrency(entry.assets)}</td>
+                      <td className="py-2 px-2 text-right font-semibold text-green-600">{formatCurrency(entry.total)}</td>
+                      <td className="py-2 px-2 text-center">
+                        <button
+                          onClick={() => deletePatrimony(entry.id)}
+                          className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Gráfico de Evolução com Scroll Horizontal */}
+          {patrimonyEntries.length > 1 && (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Gráfico de Evolução
+              </h3>
+              <div className="overflow-x-auto">
+                <div className="h-48 relative" style={{ minWidth: `${Math.max(400, patrimonyEntries.length * 60)}px` }}>
+                  <svg className="w-full h-full" viewBox={`0 0 ${Math.max(400, patrimonyEntries.length * 60)} 150`}>
+                    {/* Grid lines */}
+                    {[0, 1, 2, 3, 4].map(i => (
+                      <line
+                        key={i}
+                        x1="30"
+                        y1={20 + i * 26}
+                        x2={Math.max(370, patrimonyEntries.length * 60 - 30)}
+                        y2={20 + i * 26}
+                        stroke="#e5e7eb"
+                        strokeWidth="1"
+                      />
+                    ))}
+                    
+                    {/* Y-axis labels */}
+                    {patrimonyEntries.length > 0 && (() => {
+                      const maxValue = Math.max(...patrimonyEntries.map(e => e.total));
+                      const minValue = Math.min(...patrimonyEntries.map(e => e.total));
+                      const range = maxValue - minValue;
+                      
+                      return [0, 1, 2, 3, 4].map(i => {
+                        const value = minValue + (range * (4 - i) / 4);
+                        const formattedValue = value >= 1000 
+                          ? `R$${(value / 1000).toFixed(0)}K`
+                          : formatCurrency(value);
+                        
+                        return (
+                          <text
+                            key={i}
+                            x="25"
+                            y={24 + i * 26}
+                            textAnchor="end"
+                            className="text-xs fill-gray-600 dark:fill-gray-400"
+                          >
+                            {formattedValue}
+                          </text>
+                        );
+                      });
+                    })()}
+                    
+                    {/* Line chart */}
+                    {patrimonyEntries.length > 1 && (
+                      <polyline
+                        fill="none"
+                        stroke="#e7a034"
+                        strokeWidth="2"
+                        points={patrimonyEntries.map((entry, index) => {
+                          const x = 30 + (index * ((Math.max(340, patrimonyEntries.length * 60 - 60)) / (patrimonyEntries.length - 1)));
+                          const maxValue = Math.max(...patrimonyEntries.map(e => e.total));
+                          const minValue = Math.min(...patrimonyEntries.map(e => e.total));
+                          const range = maxValue - minValue || 1;
+                          const y = 124 - (((entry.total - minValue) / range) * 84);
+                          return `${x},${y}`;
+                        }).join(' ')}
+                      />
+                    )}
+                    
+                    {/* Data points */}
+                    {patrimonyEntries.map((entry, index) => {
+                      const x = 30 + (index * ((Math.max(340, patrimonyEntries.length * 60 - 60)) / (patrimonyEntries.length - 1)));
+                      const maxValue = Math.max(...patrimonyEntries.map(e => e.total));
+                      const minValue = Math.min(...patrimonyEntries.map(e => e.total));
+                      const range = maxValue - minValue || 1;
+                      const y = 124 - (((entry.total - minValue) / range) * 84);
+                      
+                      return (
+                        <g key={entry.id}>
+                          <circle
+                            cx={x}
+                            cy={y}
+                            r="3"
+                            fill="#e7a034"
+                          />
+                          <text
+                            x={x}
+                            y={145}
+                            textAnchor="middle"
+                            className="text-xs fill-gray-600 dark:fill-gray-400"
+                          >
+                            {entry.period}
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderAnnual = () => {
+    const totalEarned = annualBalances.reduce((sum, balance) => sum + balance.earned, 0);
+    const totalSpent = annualBalances.reduce((sum, balance) => sum + balance.spent, 0);
+    const totalBalance = totalEarned - totalSpent;
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            ⏱️ Ganho Líquido
+          </h2>
+        </div>
+
+        {/* Formulário */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Registrar Balanço
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input
+              type="text"
+              placeholder="Período (ex: 2024)"
+              value={newBalance.period}
+              onChange={(e) => setNewBalance({...newBalance, period: e.target.value})}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+            <input
+              type="number"
+              placeholder="Quanto ganhou"
+              value={newBalance.earned}
+              onChange={(e) => setNewBalance({...newBalance, earned: e.target.value})}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+            <input
+              type="number"
+              placeholder="Quanto gastou"
+              value={newBalance.spent}
+              onChange={(e) => setNewBalance({...newBalance, spent: e.target.value})}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+            <button
+              onClick={addBalance}
+              className="px-6 py-2 bg-[#e7a034] text-white rounded-lg hover:bg-[#d4941f] transition-colors"
+            >
+              Adicionar
+            </button>
+          </div>
+        </div>
+
+        {/* Gráfico de Pizza com Percentuais na Legenda - Só mostra se totalBalance >= 0 */}
+        {annualBalances.length > 0 && totalBalance >= 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Balanço Anual
+            </h3>
+            <div className="flex flex-col lg:flex-row items-center gap-8">
+              <div className="relative w-64 h-64">
+                <svg viewBox="0 0 200 200" className="w-full h-full">
+                  {(() => {
+                    if (totalEarned === 0) return null;
+                    
+                    const spentPercent = (totalSpent / totalEarned) * 100;
+                    const balancePercent = (totalBalance / totalEarned) * 100;
+                    
+                    const spentAngle = (spentPercent / 100) * 360;
+                    const balanceAngle = (balancePercent / 100) * 360;
+                    
+                    const x1 = 100 + 50 * Math.cos(0);
+                    const y1 = 100 + 50 * Math.sin(0);
+                    const x2 = 100 + 50 * Math.cos((spentAngle * Math.PI) / 180);
+                    const y2 = 100 + 50 * Math.sin((spentAngle * Math.PI) / 180);
+                    const x3 = 100 + 50 * Math.cos(((spentAngle + balanceAngle) * Math.PI) / 180);
+                    const y3 = 100 + 50 * Math.sin(((spentAngle + balanceAngle) * Math.PI) / 180);
+                    
+                    const spentLargeArc = spentAngle > 180 ? 1 : 0;
+                    const balanceLargeArc = balanceAngle > 180 ? 1 : 0;
+                    
+                    // Destacar a fatia que sobrou
+                    const balanceMidAngle = spentAngle + (balanceAngle / 2);
+                    const highlightX = 100 + 5 * Math.cos((balanceMidAngle * Math.PI) / 180);
+                    const highlightY = 100 + 5 * Math.sin((balanceMidAngle * Math.PI) / 180);
+                    
+                    return (
+                      <>
+                        <path
+                          d={`M 100 100 L ${x1} ${y1} A 50 50 0 ${spentLargeArc} 1 ${x2} ${y2} Z`}
+                          fill="#ef4444"
+                          stroke="white"
+                          strokeWidth="2"
+                        />
+                        
+                        <g transform={`translate(${highlightX - 100}, ${highlightY - 100})`}>
+                          <path
+                            d={`M 100 100 L ${x2} ${y2} A 50 50 0 ${balanceLargeArc} 1 ${x3} ${y3} Z`}
+                            fill="#22c55e"
+                            stroke="white"
+                            strokeWidth="3"
+                          />
+                        </g>
+                      </>
+                    );
+                  })()}
+                </svg>
+              </div>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 bg-red-500 rounded"></div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[100px]">
+                    Gastou
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {formatCurrency(totalSpent)} ({totalEarned > 0 ? Math.round((totalSpent / totalEarned) * 100) : 0}%)
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 bg-green-500 rounded"></div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[100px]">
+                    Sobrou
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {formatCurrency(totalBalance)} ({totalEarned > 0 ? Math.round((totalBalance / totalEarned) * 100) : 0}%)
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="text-center mt-6">
+              <p className="text-lg font-medium text-[#e7a034]">
+                🤔 Você ficou satisfeito<br />com a fatia que sobrou?
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Resumo Total */}
+        {annualBalances.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Resumo Total dos Registros
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-gradient-to-br from-[#e7a034] to-[#d4941f] rounded-2xl p-6 text-white text-center">
+                <div className="text-2xl font-bold mb-2">
+                  {formatCurrency(totalEarned)}
+                </div>
+                <div className="text-sm opacity-90">
+                  Total Ganho
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-gray-700 to-black rounded-2xl p-6 text-white text-center">
+                <div className="text-2xl font-bold mb-2">
+                  {formatCurrency(totalSpent)}
+                </div>
+                <div className="text-sm opacity-90">
+                  Total Gasto
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-gray-600 to-gray-800 rounded-2xl p-6 text-white text-center">
+                <div className={`text-2xl font-bold mb-2 ${totalBalance >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+                  {formatCurrency(totalBalance)}
+                </div>
+                <div className="text-sm opacity-90">
+                  Sobra Final
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tabela de Balanços */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Histórico de Balanços
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-gray-600">
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Período</th>
+                  <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">Ganhou</th>
+                  <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">Gastou</th>
+                  <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">Sobrou</th>
+                  <th className="text-center py-3 px-4 font-medium text-gray-900 dark:text-white">Status</th>
+                  <th className="text-center py-3 px-4 font-medium text-gray-900 dark:text-white">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {annualBalances.map((balance) => (
+                  <tr key={balance.id} className="border-b border-gray-100 dark:border-gray-700">
+                    <td className="py-3 px-4 text-gray-900 dark:text-white">{balance.period}</td>
+                    <td className="py-3 px-4 text-right text-green-600">{formatCurrency(balance.earned)}</td>
+                    <td className="py-3 px-4 text-right text-red-600">{formatCurrency(balance.spent)}</td>
+                    <td className={`py-3 px-4 text-right font-semibold ${balance.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {formatCurrency(balance.balance)}
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      {balance.balance >= 0 ? (
+                        <span className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 rounded-full text-xs">
+                          Positivo
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400 rounded-full text-xs">
+                          Negativo
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <button
+                        onClick={() => deleteBalance(balance.id)}
+                        className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderCalculator = () => {
+    const finalResult = calcResults.length > 0 ? calcResults[calcResults.length - 1] : null;
+    
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            🧮 Simulador de Juros
+          </h2>
+          <p className="text-gray-600 dark:text-gray-300">
+            Calculadora de Juros Compostos
+          </p>
+        </div>
+
+        {/* Formulário */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Parâmetros da Simulação
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Valor Inicial
+              </label>
+              <input
+                type="number"
+                placeholder=""
+                value={calcValues.initialValue}
+                onChange={(e) => setCalcValues({...calcValues, initialValue: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Aporte Mensal
+              </label>
+              <input
+                type="number"
+                placeholder=""
+                value={calcValues.monthlyContribution}
+                onChange={(e) => setCalcValues({...calcValues, monthlyContribution: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Taxa Anual (%)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                placeholder=""
+                value={calcValues.annualRate}
+                onChange={(e) => setCalcValues({...calcValues, annualRate: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Período (anos)
+              </label>
+              <input
+                type="number"
+                placeholder=""
+                value={calcValues.years}
+                onChange={(e) => setCalcValues({...calcValues, years: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Resultados */}
+        {finalResult && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gradient-to-br from-[#dd9828] to-[#b8801f] rounded-2xl p-6 text-white">
+              <h3 className="font-semibold mb-2">Total Investido</h3>
+              <div className="text-2xl font-bold">{formatCurrency(finalResult.contribution)}</div>
+            </div>
+            <div className="bg-gradient-to-br from-[#040509] to-[#1a1a1a] rounded-2xl p-6 text-white">
+              <h3 className="font-semibold mb-2">Juros Ganhos</h3>
+              <div className="text-2xl font-bold">{formatCurrency(finalResult.interest)}</div>
+            </div>
+            <div className="bg-gradient-to-br from-[#2b3747] to-[#1e2832] rounded-2xl p-6 text-white">
+              <h3 className="font-semibold mb-2">Valor Final</h3>
+              <div className="text-2xl font-bold">{formatCurrency(finalResult.total)}</div>
+            </div>
+          </div>
+        )}
+
+        {/* Gráfico Interativo com Barras - Tooltips para Mobile */}
+        {calcResults.length > 0 && calcValues.years && Number(calcValues.years) > 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Evolução do Investimento - Juros x Aportes
+            </h3>
+            <div className="w-full overflow-x-auto">
+              <div className="flex items-end justify-center gap-2 px-4 h-64 relative" style={{ minWidth: `${Math.max(400, Number(calcValues.years) * 80)}px` }}>
+                {Array.from({length: Number(calcValues.years)}, (_, yearIndex) => {
+                  const result = calcResults[((yearIndex + 1) * 12) - 1] || calcResults[calcResults.length - 1];
+                  const maxValue = Math.max(...calcResults.map(r => r.total));
+                  const contributionHeight = (result.contribution / maxValue) * 200;
+                  const interestHeight = (result.interest / maxValue) * 200;
+                  
+                  return (
+                    <div 
+                      key={yearIndex} 
+                      className="flex flex-col items-center group relative cursor-pointer"
+                      style={{ minWidth: `${Math.max(60, 300 / Number(calcValues.years))}px` }}
+                      onTouchStart={(e) => {
+                        // Para dispositivos móveis - mostrar tooltip no toque
+                        const tooltip = e.currentTarget.querySelector('.tooltip');
+                        if (tooltip) {
+                          tooltip.classList.remove('opacity-0');
+                          tooltip.classList.add('opacity-100');
+                          setTimeout(() => {
+                            tooltip.classList.remove('opacity-100');
+                            tooltip.classList.add('opacity-0');
+                          }, 3000);
+                        }
+                      }}
+                    >
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                        {yearIndex + 1}a
+                      </div>
+                      <div className="relative flex flex-col w-full max-w-20">
+                        <div
+                          className="bg-gradient-to-t from-[#dd9828] to-[#e7a034] w-full transition-all duration-300 group-hover:from-[#b8801f] group-hover:to-[#d4941f]"
+                          style={{ height: `${interestHeight}px` }}
+                        ></div>
+                        <div
+                          className="bg-gradient-to-t from-[#040509] to-[#2b3747] w-full transition-all duration-300 group-hover:from-[#1a1a1a] group-hover:to-[#1e2832]"
+                          style={{ height: `${contributionHeight}px` }}
+                        ></div>
+                      </div>
+                      {/* Tooltip para desktop e mobile */}
+                      <div className="tooltip absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-3 py-2 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 shadow-lg">
+                        <div>Total: {formatCurrency(result.total)}</div>
+                        <div>Aportes: {formatCurrency(result.contribution)}</div>
+                        <div>Juros: {formatCurrency(result.interest)}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="flex justify-center gap-6 mt-4">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-gradient-to-r from-[#040509] to-[#2b3747] rounded"></div>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Aportes</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-gradient-to-r from-[#dd9828] to-[#e7a034] rounded"></div>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Juros</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Frase Motivacional */}
+        <div className="bg-gradient-to-r from-[#e7a034]/10 to-[#e7a034]/5 rounded-2xl p-6 text-center">
+          <p className="text-lg font-medium text-[#e7a034]">
+            🌱 "Os juros compostos são a oitava maravilha do mundo. Quem entende, ganha; quem não entende, paga." — Albert Einstein
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  const renderLibrary = () => (
+    <div className="space-y-6">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          📚 Biblioteca de Desenvolvimento
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300">
+          Conhecimento é o melhor investimento que você pode fazer
+        </p>
+      </div>
+
+      {/* Livros Recomendados */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Livros Recomendados
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {books.map((book) => (
+            <div key={book.id} className="flex gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <img
+                src={book.cover}
+                alt={book.title}
+                className="w-16 h-20 object-cover rounded"
+              />
+              <div className="flex-1">
+                <h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">
+                  {book.title}
+                </h4>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                  {book.author}
+                </p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  {book.summary}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Conteúdos Educativos */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Conteúdos e Insights
+        </h3>
+        <div className="space-y-4">
+          {educationalContent.map((content) => (
+            <div key={content.id} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="px-2 py-1 bg-[#e7a034]/20 text-[#e7a034] rounded-full text-xs">
+                  {content.category}
+                </span>
+                <h4 className="font-semibold text-gray-900 dark:text-white">
+                  {content.title}
+                </h4>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {content.content}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Dicas Adicionais */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Opções de Reserva de Emergência
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 bg-gradient-to-br from-[#e7a034] to-[#d4941f] rounded-lg text-white">
+            <h4 className="font-semibold mb-2">
+              Tesouro Direto - SELIC
+            </h4>
+            <p className="text-sm opacity-90">
+              Liquidez diária, rentabilidade atrelada à taxa básica de juros.
+            </p>
+          </div>
+          <div className="p-4 bg-gradient-to-br from-[#e7a034] to-[#d4941f] rounded-lg text-white">
+            <h4 className="font-semibold mb-2">
+              CDB com Liquidez Diária
+            </h4>
+            <p className="text-sm opacity-90">
+              Grandes bancos, garantia do FGC, resgate a qualquer momento.
+            </p>
+          </div>
+          <div className="p-4 bg-gradient-to-br from-[#e7a034] to-[#d4941f] rounded-lg text-white">
+            <h4 className="font-semibold mb-2">
+              Fundo DI - Taxa Zero
+            </h4>
+            <p className="text-sm opacity-90">
+              Sem taxa de administração, liquidez diária, baixo risco.
+            </p>
+          </div>
+          <div className="p-4 bg-gradient-to-br from-[#e7a034] to-[#d4941f] rounded-lg text-white">
+            <h4 className="font-semibold mb-2">
+              Conta Remunerada
+            </h4>
+            <p className="text-sm opacity-90">
+              Caixinha Nubank, liquidez imediata, rendimento diário.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   const menuItems = [
     { id: 'dashboard', label: 'Painel de Controle', icon: BarChart3 },
     { id: 'budget', label: 'Orçamento', icon: PieChart },
@@ -1566,6 +2213,13 @@ export default function UpMoneyApp() {
   const renderContent = () => {
     switch (activeSection) {
       case 'dashboard': return renderDashboard();
+      case 'objectives': return renderObjectives();
+      case 'calculator': return renderCalculator();
+      case 'budget': return renderBudget();
+      case 'cuts': return renderCuts();
+      case 'patrimony': return renderPatrimony();
+      case 'annual': return renderAnnual();
+      case 'library': return renderLibrary();
       default: return renderDashboard();
     }
   };
@@ -1576,6 +2230,7 @@ export default function UpMoneyApp() {
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
+            {/* Mobile: Menu à esquerda */}
             <div className="flex items-center gap-4 lg:hidden">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -1585,6 +2240,7 @@ export default function UpMoneyApp() {
               </button>
             </div>
 
+            {/* Logo centralizada */}
             <button
               onClick={() => setActiveSection('dashboard')}
               className="flex items-center gap-3 hover:opacity-80 transition-opacity lg:absolute lg:left-1/2 lg:transform lg:-translate-x-1/2"
@@ -1596,6 +2252,7 @@ export default function UpMoneyApp() {
               />
             </button>
 
+            {/* Controles à direita */}
             <div className="flex items-center gap-4">
               <button
                 onClick={toggleTheme}
@@ -1603,6 +2260,7 @@ export default function UpMoneyApp() {
               >
                 {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
               </button>
+              {/* Desktop: Botão Sair */}
               <button
                 onClick={handleLogout}
                 className="hidden lg:flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
@@ -1617,6 +2275,7 @@ export default function UpMoneyApp() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
+          {/* Mobile Navigation Drawer */}
           {isMobileMenuOpen && (
             <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setIsMobileMenuOpen(false)}>
               <div className="fixed left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 shadow-xl transform transition-transform">
@@ -1655,6 +2314,7 @@ export default function UpMoneyApp() {
                         </button>
                       );
                     })}
+                    {/* Mobile: Botão Sair no drawer */}
                     <button
                       onClick={handleLogout}
                       className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
@@ -1668,6 +2328,7 @@ export default function UpMoneyApp() {
             </div>
           )}
 
+          {/* Desktop Sidebar */}
           <div className="hidden lg:block lg:w-64">
             <nav className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg">
               <div className="space-y-2">
@@ -1692,6 +2353,7 @@ export default function UpMoneyApp() {
             </nav>
           </div>
 
+          {/* Main Content */}
           <div className="flex-1">
             {renderContent()}
           </div>

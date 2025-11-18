@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,15 +34,6 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
-        {/* Google Tag Manager */}
-        <Script id="google-tag-manager" strategy="afterInteractive">
-          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-TL5MD4NC');`}
-        </Script>
-        
         <link rel="icon" type="image/png" href="https://k6hrqrxuu8obbfwn.public.blob.vercel-storage.com/temp/83aa3506-8236-4455-8319-74f99c4cb14b.png" />
         <link rel="apple-touch-icon" href="https://k6hrqrxuu8obbfwn.public.blob.vercel-storage.com/temp/83aa3506-8236-4455-8319-74f99c4cb14b.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -53,16 +43,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
       </head>
       <body className={inter.className}>
-        {/* Google Tag Manager (noscript) */}
-        <noscript>
-          <iframe 
-            src="https://www.googletagmanager.com/ns.html?id=GTM-TL5MD4NC"
-            height="0" 
-            width="0" 
-            style={{ display: 'none', visibility: 'hidden' }}
-          />
-        </noscript>
-        
         <ThemeProvider>
           {children}
         </ThemeProvider>

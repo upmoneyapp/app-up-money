@@ -13,7 +13,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success', text: string } | null>(null);
 
@@ -24,7 +23,7 @@ export default function LoginPage() {
       
       // Se já está logado, redirecionar para o app
       if (session) {
-        router.push('/');
+        router.push('/app');
       }
     });
 
@@ -35,7 +34,7 @@ export default function LoginPage() {
       
       // Se fez login, redirecionar para o app
       if (session) {
-        router.push('/');
+        router.push('/app');
       }
     });
 
@@ -48,28 +47,14 @@ export default function LoginPage() {
     setMessage(null);
 
     try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-        
-        if (error) throw error;
-        
-        setMessage({ 
-          type: 'success', 
-          text: 'Conta criada! Verifique seu e-mail para confirmar.' 
-        });
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        
-        if (error) throw error;
-        
-        // Redirecionamento será feito pelo onAuthStateChange
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) throw error;
+      
+      // Redirecionamento será feito pelo onAuthStateChange
     } catch (error: any) {
       setMessage({ 
         type: 'error', 
@@ -105,12 +90,10 @@ export default function LoginPage() {
             className="h-16 w-auto mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            {isSignUp ? 'Criar Conta' : 'Acesse o UP Money'}
+            Acesse o UP Money
           </h1>
           <p className="text-gray-600 dark:text-gray-300 text-sm">
-            {isSignUp 
-              ? 'Crie sua conta para começar a usar o aplicativo' 
-              : 'Entre com suas credenciais para acessar o aplicativo'}
+            Entre com suas credenciais para acessar o aplicativo
           </p>
         </div>
         
@@ -157,26 +140,22 @@ export default function LoginPage() {
             disabled={authLoading}
             className="w-full bg-[#e7a034] hover:bg-[#d4941f] text-white"
           >
-            {authLoading 
-              ? 'Processando...' 
-              : isSignUp ? 'Criar Conta' : 'Entrar'}
+            {authLoading ? 'Processando...' : 'Entrar'}
           </Button>
         </form>
 
         <div className="mt-6 text-center">
           <button
-            onClick={() => setIsSignUp(!isSignUp)}
+            onClick={() => router.push('/pv/planos')}
             className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#e7a034] transition-colors"
           >
-            {isSignUp 
-              ? 'Já tem uma conta? Entre aqui' 
-              : 'Não tem uma conta? Cadastre-se'}
+            Não tem uma conta? Cadastre-se
           </button>
         </div>
 
         <div className="mt-4 text-center">
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/pv')}
             className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#e7a034] transition-colors"
           >
             ← Voltar para página de vendas
